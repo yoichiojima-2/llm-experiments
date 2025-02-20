@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from langchain.chat_models import init_chat_model
+from langchain_community.tools import ShellTool
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -11,7 +12,8 @@ class Agent:
         model = init_chat_model("gpt-4o-mini", model_provider="openai")
         memory = MemorySaver()
         search = TavilySearchResults(max_results=2)
-        tools = [search]
+        shell = ShellTool()
+        tools = [search, shell]
         self.agent = create_react_agent(model.bind_tools(tools), tools, checkpointer=memory)
 
     def ask(self, query: str):
