@@ -1,3 +1,4 @@
+import typing as t
 from argparse import ArgumentParser, Namespace
 from langchain.chat_models import init_chat_model
 from langchain_community.tools import ShellTool
@@ -8,7 +9,8 @@ from langchain_core.messages import HumanMessage
 
 
 class Agent:
-    def __init__(self):
+    def __init__(self, config: dict[str, t.Any]):
+        self.config = config
         model = init_chat_model("gpt-4o-mini", model_provider="openai")
         memory = MemorySaver()
         search = TavilySearchResults(max_results=2)
@@ -16,12 +18,17 @@ class Agent:
         tools = [search, shell]
         self.agent = create_react_agent(model.bind_tools(tools), tools, checkpointer=memory)
 
-    def ask(self, query: str):
-        config = {"configurable": {"thread_id": "1"}}
+    def stream(self, query: str):
         messages = [HumanMessage(content=query)]
-        for step, metadata in self.agent.stream({"messages": messages}, config, stream_mode="messages"):
+        for step, metadata in self.agent.stream({"messages": messages}, self.config, stream_mode="messages"):
+            from pprint import pprint; pprint(step)
             if metadata["langgraph_node"] == "agent" and (text := step.text()):
                 yield text
+
+    def invoke(self, query: str):
+        messages = [HumanMessage(content=query)]
+        for step in self.agent.invoke({"messages": messages}, self.config, stream_mode="values"):
+            return step
 
 
 def parse_args() -> Namespace:
@@ -33,6 +40,7 @@ def parse_args() -> Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    agent = Agent()
-    for i in agent.ask(args.query):
+    config = {"configurable": {"thread_id": "rabbit"}}
+    agent = Agent(config=config)
+    for i in agent.invoke(args.query):
         print(i, end="")
