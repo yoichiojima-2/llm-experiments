@@ -1,0 +1,10 @@
+services:
+  llm-experiments:
+    build:
+      context: .
+    container_name: dev
+    volumes:
+      - .:/llm-experiments
+    tty: true
+    env_file:
+      - .env
