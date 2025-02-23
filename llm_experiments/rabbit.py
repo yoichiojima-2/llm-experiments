@@ -2,18 +2,18 @@ import typing as t
 from argparse import ArgumentParser, Namespace
 from pprint import pprint
 
-from langchain.chat_models import init_chat_model
 from langchain_community.tools import ShellTool
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
+from llm_experiments.chat_models import instantiate_chat_model
 
 
 class Agent:
     def __init__(self, config: dict[str, t.Any]):
         self.config = config
-        model = init_chat_model("gpt-4o-mini", model_provider="openai")
+        model = instantiate_chat_model("gpt-4o-mini")
         memory = MemorySaver()
         search = TavilySearchResults(max_results=2)
         shell = ShellTool()
