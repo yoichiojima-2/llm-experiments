@@ -27,7 +27,6 @@ class Agent:
         for step, metadata in self.agent.stream(
             {"messages": messages}, self.config, stream_mode="messages"
         ):
-            pprint(step)
             if metadata["langgraph_node"] == "agent" and (text := step.text()):
                 yield text
 
