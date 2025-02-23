@@ -49,5 +49,5 @@ if __name__ == "__main__":
     args = parse_args()
     config = {"configurable": {"thread_id": "rabbit"}}
     agent = Agent(config=config)
-    for i in agent.invoke(args.query):
+    for i in agent.stream(args.query):
         print(i, end="")
