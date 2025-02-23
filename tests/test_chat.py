@@ -7,5 +7,10 @@ def test_4o_mini():
 
 
 def test_r1():
-    deepseek_r1 = chat.instantiate_chat("deepseek-r1:8b")
-    assert deepseek_r1.invoke("test")
+    model = chat.instantiate_chat("deepseek-r1:8b")
+    assert model.invoke("test")
+
+
+def test_llama():
+    model = chat.instantiate_chat("llama3.2")
+    assert model.invoke("test")

@@ -7,5 +7,7 @@ def instantiate_chat(opt: str):
             return init_chat_model("gpt-4o-mini", model_provider="openai")
         case "deepseek-r1:8b":
             return init_chat_model("deepseek-r1:8b", model_provider="ollama")
+        case "llama3.2":
+            return init_chat_model("llama3.2", model_provider="ollama")
         case _:
             raise ValueError(f"Unknown model: {opt}")
