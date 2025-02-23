@@ -7,13 +7,13 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
-from llm_experiments.chat_models import instantiate_chat_model
+from llm_experiments.chat import instantiate_chat
 
 
 class Agent:
     def __init__(self, config: dict[str, t.Any]):
         self.config = config
-        model = instantiate_chat_model("gpt-4o-mini")
+        model = instantiate_chat("gpt-4o-mini")
         memory = MemorySaver()
         search = TavilySearchResults(max_results=2)
         shell = ShellTool()
@@ -51,3 +51,4 @@ if __name__ == "__main__":
     agent = Agent(config=config)
     for i in agent.stream(args.query):
         print(i, end="")
+    print()
