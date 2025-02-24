@@ -12,7 +12,7 @@ from llm_experiments.chat import instantiate_chat
 class Agent:
     def __init__(self, config: dict[str, t.Any]):
         self.config = config
-        model = instantiate_chat("gpt-4o-mini")
+        model = instantiate_chat("4o-mini")
         memory = MemorySaver()
         search = TavilySearchResults(max_results=2)
         shell = ShellTool()
