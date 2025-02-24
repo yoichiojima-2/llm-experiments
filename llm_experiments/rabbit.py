@@ -1,8 +1,8 @@
-import typing as t
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 
 from langchain_community.tools import ShellTool
 from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_core.messages.ai import AIMessageChunk
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -10,46 +10,44 @@ from llm_experiments.chat import instantiate_chat
 
 
 class Agent:
-    def __init__(self, config: dict[str, t.Any]):
-        self.config = config
-        model = instantiate_chat("4o-mini")
-        memory = MemorySaver()
+    def __init__(self, chat_model="4o-mini", thread_id="default"):
+        self.model = instantiate_chat(chat_model)
+        self.config = {"configurable": {"thread_id": thread_id}}
         search = TavilySearchResults(max_results=2)
         shell = ShellTool()
-        tools = [search, shell]
+        self.tools = [search, shell]
+        self.tooled_model = self.model.bind_tools(self.tools)
         self.agent = create_react_agent(
-            model.bind_tools(tools), tools, checkpointer=memory
+            self.tooled_model, self.tools, checkpointer=MemorySaver()
         )
 
-    def stream(self, query: str):
+    def stream(self, query):
         messages = [HumanMessage(content=query)]
-        for step, metadata in self.agent.stream(
+        return self.agent.stream({"messages": messages}, self.config)
+
+    def stream_messages(self, query):
+        messages = [HumanMessage(content=query)]
+        for i in self.agent.stream(
             {"messages": messages}, self.config, stream_mode="messages"
         ):
-            if metadata["langgraph_node"] == "agent" and (text := step.text()):
-                yield text
+            if isinstance(i[0], AIMessageChunk):
+                print(i[0].content, end="")
 
-    def invoke(self, query: str):
+    def invoke(self, query):
         messages = [HumanMessage(content=query)]
-        for step in self.agent.invoke(
-            {"messages": messages}, self.config, stream_mode="values"
-        ):
-            return step
+        return self.agent.invoke({"messages": messages}, self.config)
 
 
-def parse_args() -> Namespace:
+def parse_args():
     parser = ArgumentParser()
     opt = parser.add_argument
     opt("--query", "-q", type=str, required=True)
     return parser.parse_args()
 
 
-def main(query: str):
-    config = {"configurable": {"thread_id": "rabbit"}}
-    agent = Agent(config=config)
-    for i in agent.stream(query):
-        print(i, end="")
-    print()
+def main(query):
+    agent = Agent()
+    agent.stream_messages(query)
 
 
 if __name__ == "__main__":
