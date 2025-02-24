@@ -19,9 +19,7 @@ class Agent:
         vs = VectorStore().tool
         self.tools = [search, shell, vs]
         self.tooled_model = self.model.bind_tools(self.tools)
-        self.agent = create_react_agent(
-            self.tooled_model, self.tools, checkpointer=MemorySaver()
-        )
+        self.agent = create_react_agent(self.tooled_model, self.tools, checkpointer=MemorySaver())
 
     def stream(self, query):
         messages = [HumanMessage(content=query)]
@@ -29,9 +27,7 @@ class Agent:
 
     def stream_messages(self, query):
         messages = [HumanMessage(content=query)]
-        for i in self.agent.stream(
-            {"messages": messages}, self.config, stream_mode="messages"
-        ):
+        for i in self.agent.stream({"messages": messages}, self.config, stream_mode="messages"):
             if isinstance(i[0], AIMessageChunk):
                 print(i[0].content, end="")
 

@@ -13,9 +13,7 @@ class VectorStore:
         persist_directory=str(get_app_root() / ".vectorstore"),
         embedding="nomic-embed-text",
     ):
-        print(
-            f"Initializing VectorStore with collection: {collection_name}, directory: {persist_directory}"
-        )
+        print(f"Initializing VectorStore with collection: {collection_name}, directory: {persist_directory}")
         self.vs = Chroma(
             collection_name=collection_name,
             embedding_function=instantiate_embedding(embedding),
@@ -36,9 +34,7 @@ class VectorStore:
 
     def get_all(self):
         result = self.vs.get()
-        print(
-            f"Getting all documents: found {len(result['ids']) if result['ids'] else 0} documents"
-        )
+        print(f"Getting all documents: found {len(result['ids']) if result['ids'] else 0} documents")
         return result
 
 
@@ -51,10 +47,8 @@ async def main():
     contents = vs.get_all()
     print(f"Number of documents: {len(contents['ids'])}")
 
-    # Print current working directory to verify where files are being saved
     print(f"Current working directory: {os.getcwd()}")
 
-    # List the actual files in the .vectorstore directory
     print("\nFiles in .vectorstore directory:")
     if os.path.exists(".vectorstore"):
         print(os.listdir(".vectorstore"))
