@@ -1,8 +1,10 @@
 import asyncio
-from langchain_community.document_loaders import WebBaseLoader
-from langchain_chroma import Chroma
-from llm_experiments.embedding import instantiate_embedding
 import os
+
+from langchain_chroma import Chroma
+from langchain_community.document_loaders import WebBaseLoader
+
+from llm_experiments.embedding import instantiate_embedding
 from llm_experiments.utils import get_app_root
 
 

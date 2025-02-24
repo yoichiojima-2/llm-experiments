@@ -1,6 +1,8 @@
 import base64
 from io import BytesIO
+
 from PIL import Image
+
 from llm_experiments.vision import instantiate_vision
 
 
