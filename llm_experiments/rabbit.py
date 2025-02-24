@@ -7,7 +7,7 @@ from langchain_core.messages.ai import AIMessageChunk
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
-from llm_experiments.chat import instantiate_chat
+from llm_experiments.models import instantiate_chat
 from llm_experiments.vectorstore import VectorStore
 
 
