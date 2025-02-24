@@ -1,6 +1,5 @@
 import typing as t
 from argparse import ArgumentParser, Namespace
-from pprint import pprint
 
 from langchain_community.tools import ShellTool
 from langchain_community.tools.tavily_search import TavilySearchResults
