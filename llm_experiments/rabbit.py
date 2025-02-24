@@ -7,6 +7,7 @@ from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from llm_experiments.chat import instantiate_chat
+from llm_experiments.vectorstore import VectorStore
 
 
 class Agent:
@@ -15,7 +16,8 @@ class Agent:
         self.config = {"configurable": {"thread_id": thread_id}}
         search = TavilySearchResults(max_results=2)
         shell = ShellTool()
-        self.tools = [search, shell]
+        vs = VectorStore().tool
+        self.tools = [search, shell, vs]
         self.tooled_model = self.model.bind_tools(self.tools)
         self.agent = create_react_agent(
             self.tooled_model, self.tools, checkpointer=MemorySaver()
