@@ -44,10 +44,14 @@ def parse_args() -> Namespace:
     return parser.parse_args()
 
 
-if __name__ == "__main__":
-    args = parse_args()
+def main(query: str):
     config = {"configurable": {"thread_id": "rabbit"}}
     agent = Agent(config=config)
-    for i in agent.stream(args.query):
+    for i in agent.stream(query):
         print(i, end="")
     print()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(args.query)
