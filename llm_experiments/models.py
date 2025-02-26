@@ -3,7 +3,7 @@ from langchain_ollama import OllamaEmbeddings
 from langchain.chat_models import init_chat_model
 
 
-def instantiate_chat(opt: str):
+def instantiate_chat(opt):
     match opt:
         case "4o-mini":
             return init_chat_model("gpt-4o-mini", model_provider="openai")
@@ -15,7 +15,7 @@ def instantiate_chat(opt: str):
             raise ValueError(f"Unknown model: {opt}")
 
 
-def instantiate_embedding(opt: str):
+def instantiate_embedding(opt):
     match opt:
         case "mxbai-embed-large":
             return OllamaEmbeddings(model="mxbai-embed-large")
@@ -25,7 +25,7 @@ def instantiate_embedding(opt: str):
             raise ValueError(f"Unknown embedding model: {opt}")
 
 
-def instantiate_vision(opt: str):
+def instantiate_vision(opt):
     match opt:
         case "llava":
             return OllamaLLM(model="llava")
