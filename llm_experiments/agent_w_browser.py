@@ -4,6 +4,10 @@ from langchain.agents import initialize_agent, AgentType
 from playwright.async_api import async_playwright
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
 from llm_experiments.models import instantiate_chat
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 async def run(query):
