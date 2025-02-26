@@ -13,3 +13,6 @@ lint:
 	${UV} ruff format .
 
 pre-commit: lint clean
+
+test:
+	${UV} pytest -vvv
