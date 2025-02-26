@@ -1,5 +1,4 @@
 import asyncio
-import os
 
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import WebBaseLoader
@@ -8,9 +7,8 @@ from llm_experiments.models import instantiate_embedding
 from llm_experiments.utils import get_app_root
 
 
-URLS = [
-    "https://python.langchain.com/docs/concepts/tool_calling/"
-]
+URLS = ["https://python.langchain.com/docs/concepts/tool_calling/"]
+
 
 class VectorStore:
     def __init__(
@@ -42,6 +40,7 @@ async def main():
     vs = VectorStore()
     await vs.add_webpages(URLS)
     print(vs.get_all())
+
 
 if __name__ == "__main__":
     asyncio.run(main())
