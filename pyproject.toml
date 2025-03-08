@@ -1,36 +1,37 @@
 [project]
-name = "langchain-experiments"
+name = "llm-experiments"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "isort>=6.0.0",
-    "jupyterlab>=4.3.5",
-    "langchain>=0.3.18",
-    "langchain-chroma>=0.2.2",
-    "langchain-community>=0.3.17",
+    "bs4>=0.0.2",
+    "duckduckgo-search>=7.5.1",
+    "langchain>=0.3.20",
+    "langchain-community>=0.3.19",
     "langchain-experimental>=0.3.4",
-    "langchain-ollama>=0.2.3",
-    "langchain-openai>=0.3.5",
-    "langgraph>=0.2.72",
+    "langchain-openai>=0.3.8",
+    "langgraph>=0.3.5",
     "lxml>=5.3.1",
-    "pillow>=11.1.0",
-    "playwright>=1.50.0",
+    "playwright>=1.51.0",
     "python-dotenv>=1.0.1",
-    "pyyaml>=6.0.2",
-    "tavily-python>=0.5.1",
+    "spotipy>=2.25.1",
+    "urllib3>=2.3.0",
+    "wikipedia>=1.4.0",
 ]
 
 [dependency-groups]
 dev = [
-    "black>=25.1.0",
-    "ipython>=8.32.0",
-    "isort>=6.0.0",
-    "mypy>=1.15.0",
-    "pytest>=8.3.4",
+    "isort>=6.0.1",
+    "jupyterlab>=4.3.5",
+    "jupyterlab-vim>=4.1.4",
+    "pytest>=8.3.5",
     "pytest-asyncio>=0.25.3",
+    "ruff>=0.9.10",
 ]
 
 [tool.ruff]
 line-length = 127
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

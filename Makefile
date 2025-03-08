@@ -7,8 +7,13 @@ clean:
 	find . -name .pytest_cache -type d -exec rm -rf {} +
 	find . -name .ruff_cache -type d -exec rm -rf {} +
 	find . -name .mypy_cache -type d -exec rm -rf {} +
+	find . -name .ipynb_checkpoints -type d -exec rm -rf {} +
+	find . -name .cache -type f -exec rm {} +
+	-rm .cache
+	-rm uv.lock
 
 lint:
+	${UV} isort .
 	${UV} ruff check --fix .
 	${UV} ruff format .
 
