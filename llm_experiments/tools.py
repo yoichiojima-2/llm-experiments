@@ -7,7 +7,7 @@ from playwright.async_api import async_playwright
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
 
 
-class BrowserManager:
+class Browser:
     def __init__(self):
         self.playwright = None
         self.browser = None
