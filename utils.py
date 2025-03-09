@@ -1,5 +1,21 @@
 import json
 
+from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
+from playwright.async_api import async_playwright
+
+
+class Playwright:
+    async def __aenter__(self):
+        self.playwright = await async_playwright().start()
+        self.browser = await self.playwright.chromium.launch(headless=False)
+        toolkit = PlayWrightBrowserToolkit.from_browser(async_browser=self.browser)
+        self.tools = toolkit.get_tools()
+        return self
+
+    async def __aexit__(self, *a):
+        await self.browser.close()
+        await self.playwright.stop()
+
 
 async def print_stream(stream):
     async for s in stream:
