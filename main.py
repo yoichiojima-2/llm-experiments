@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import START, StateGraph
+from langgraph.graph import START, MessagesState, StateGraph
 from playwright.async_api import async_playwright
 
 import nodes
@@ -42,7 +42,7 @@ async def run(query, thread_id="1"):
     spotify = nodes.SpotifyNode(model, checkpointer=memory).node()
     shell = nodes.ShellNode(model, checkpointer=memory).node()
 
-    graph = StateGraph(nodes.State)
+    graph = StateGraph(MessagesState)
     graph.add_node("supervisor", supervisor)
     graph.add_node("spotify", spotify)
     graph.add_node("shell", shell)

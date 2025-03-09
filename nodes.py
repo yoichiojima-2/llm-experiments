@@ -1,8 +1,7 @@
-import operator
 import os
 from abc import ABC, abstractmethod
 from logging import getLogger
-from typing import Annotated, Literal
+from typing import Literal
 
 import langsmith
 from langgraph.graph import MessagesState
@@ -14,12 +13,6 @@ from utils import parse_base_model
 
 logger = getLogger(__name__)
 logger.setLevel("DEBUG")
-
-
-class State(MessagesState):
-    scratchpad: Annotated[str, operator.add] = Field(
-        description="A scratchpad for the user to write notes"
-    )
 
 
 class Node(ABC):
@@ -65,7 +58,7 @@ class SpotifyNode(Node):
         self.agent = agents.SpotifyAgent().agent(self.model, *a, **kw)
 
     def node(self):
-        async def f(state: State) -> Command[Literal["supervisor"]]:
+        async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
             payload = {"input": [self.get_last_message(state)]}
             res = await self.agent.ainvoke(payload)
             return Command(goto="supervisor", update={"messages": [res["output"]]})
@@ -79,8 +72,8 @@ class ShellNode(Node):
         self.agent = agents.ShellAgent().agent(self.model, *a, **kw)
 
     def node(self):
-        async def f(state: State) -> Command[Literal["supervisor"]]:
-            payload = {"input": [self.get_last_message(state)]}
+        async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
+            payload = {"messages": [self.get_last_message(state)]}
             res = await self.agent.ainvoke(payload)
             msg = res["messages"][-1]
             return Command(goto="supervisor", update={"messages": [msg.content]})
