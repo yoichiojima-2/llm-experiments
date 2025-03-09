@@ -2,8 +2,14 @@ import asyncio
 from argparse import ArgumentParser
 
 from dotenv import load_dotenv
+from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
+from langgraph.graph import START, MessagesState, StateGraph
 from playwright.async_api import async_playwright
+
+from nodes import SpotifyNode, SupervisorNode
+
+from langgraph.checkpoint.memory import MemorySaver
 
 load_dotenv()
 
@@ -28,7 +34,23 @@ class Playwright:
         await self.playwright.stop()
 
 
-async def run(query, thread_id="1"): ...
+async def run(query, thread_id="1"):
+    model = init_chat_model("gpt-4o-mini", model_provider="openai")
+    config = {"configurable": {"thread_id": thread_id}}
+
+    memory = MemorySaver()
+    supervisor = SupervisorNode(model).node()
+    spotify = SpotifyNode(model, checkpointer=memory).node()
+
+    graph = StateGraph(MessagesState)
+    graph.add_node("supervisor", supervisor)
+    graph.add_node("spotify", spotify)
+    graph.add_edge(START, "supervisor")
+    app = graph.compile()
+    async for i in app.astream({"messages": [query]}, config):
+        print(i)
+
+
 
 
 async def main():

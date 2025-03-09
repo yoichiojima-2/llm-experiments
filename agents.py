@@ -55,6 +55,9 @@ class OpenAPIAgent(Agent):
             **kw,
         )
 
+class SupervisorAgent(Agent):
+    def agent(self, model, *a, **kw):
+        return create_react_agent(model, [], *a, **kw)
 
 class SpotifyAgent(Agent):
     def agent(self, model, handle_parsing_errors=True, *a, **kw):
