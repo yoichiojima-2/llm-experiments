@@ -1,9 +1,7 @@
 import asyncio
-from pprint import pprint
 
 from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
-from langchain.agents import AgentType
 from langgraph.prebuilt import create_react_agent
 from playwright.async_api import async_playwright
 
