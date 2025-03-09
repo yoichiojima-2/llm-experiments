@@ -5,7 +5,6 @@ from typing import Literal
 
 import langsmith
 from langgraph.graph import MessagesState
-from langgraph.prebuilt import create_react_agent
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
@@ -31,24 +30,27 @@ class SupervisorNode(Node):
         self.agent = agents.SupervisorAgent().agent(self.model, *a, **kw)
 
     class Output(BaseModel):
-        next_agent: Literal["__end__", "spotify"] = Field(
+        next_agent: Literal["__end__", "spotify", "shell"] = Field(
             description="The next agent to invoke"
         )
-    
+
     def node(self):
-        async def f(state: MessagesState) -> Command[Literal["__end__", "spotify"]]:
+        async def f(
+            state: MessagesState,
+        ) -> Command[Literal["__end__", "spotify", "shell"]]:
             c = langsmith.Client(api_key=os.getenv("LANGSMITH_API_KEY"))
             prompt = c.pull_prompt("homanp/superagent")
             chain = prompt | self.model.with_structured_output(self.Output)
             payload = {
                 "input": self.get_last_message(state),
                 "output_format": parse_base_model(self.Output),
-                "tools": ["__end__", "spotify"],
+                "tools": ["__end__", "spotify", "shell"],
             }
             res = await chain.ainvoke(payload)
             return Command(goto=res.next_agent)
 
         return f
+
 
 class SpotifyNode(Node):
     def __init__(self, model, *a, **kw):
@@ -60,5 +62,20 @@ class SpotifyNode(Node):
             payload = {"input": [self.get_last_message(state)]}
             res = await self.agent.ainvoke(payload)
             return Command(goto="supervisor", update={"messages": [res["output"]]})
+
+        return f
+
+
+class ShellNode(Node):
+    def __init__(self, model, *a, **kw):
+        self.model = model
+        self.agent = agents.ShellAgent().agent(self.model, *a, **kw)
+
+    def node(self):
+        async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
+            payload = {"input": [self.get_last_message(state)]}
+            res = await self.agent.ainvoke(payload)
+            print(res)
+            return {"messages", ["debug"]}
 
         return f
