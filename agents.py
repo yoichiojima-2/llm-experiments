@@ -13,6 +13,16 @@ from langchain_experimental.utilities import PythonREPL
 from langgraph.prebuilt import create_react_agent
 from spotipy import util as spotipy_util
 
+__all__ = [
+    "SpotifyAgent",
+    "DuckDuckGoAgent",
+    "ShellAgent",
+    "BrowserAgent",
+    "PythonAgent",
+    "WikipediaAgent",
+    "FileAgent",
+]
+
 
 class Agent(ABC):
     @abstractmethod
