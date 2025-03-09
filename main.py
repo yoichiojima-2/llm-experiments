@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 
 from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
+from langchain_community.tools import DuckDuckGoSearchRun, ShellTool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from playwright.async_api import async_playwright
@@ -38,18 +39,19 @@ async def print_stream(stream):
 
 
 async def run(query, thread_id="1"):
-    inputs = {
-        "messages": [
-            ("user", query),
-        ]
-    }
+    inputs = {"messages": [("user", query)]}
     config = {"configurable": {"thread_id": thread_id}}
 
     model = init_chat_model("gpt-4o-mini", model_provider="openai")
     memory = MemorySaver()
 
     async with Browser() as b:
-        graph = create_react_agent(model, tools=b.tools, checkpointer=memory)
+        tools = [
+            *b.tools,
+            DuckDuckGoSearchRun(),
+            ShellTool(),
+        ]
+        graph = create_react_agent(model, tools=tools, checkpointer=memory)
         res = graph.astream(inputs, config, stream_mode="values")
         await print_stream(res)
 
