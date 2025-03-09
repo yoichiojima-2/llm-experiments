@@ -1,7 +1,10 @@
 import asyncio
+from pprint import pprint
 
 from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
+from langchain.agents import AgentType
+from langgraph.prebuilt import create_react_agent
 from playwright.async_api import async_playwright
 
 
@@ -18,11 +21,21 @@ class Browser:
         await self.playwright.stop()
 
 
+async def print_stream(stream):
+    async for s in stream:
+        message = s["messages"][-1]
+        if isinstance(message, tuple):
+            print(message)
+        else:
+            message.pretty_print()
+
+
 async def main():
     async with Browser() as b:
-        llm = init_chat_model("gpt-4o-mini", model_provider="openai")
-        llm_w_tools = llm.bind_tools(b.tools)
-        res = await llm_w_tools.ainvoke("search google")
+        model = init_chat_model("gpt-4o-mini", model_provider="openai")
+        graph = create_react_agent(model, tools=b.tools)
+        inputs = {"messages": [("user", "what is the weather in tokyo right now?")]}
+        await print_stream(graph.astream(inputs, stream_mode="values"))
 
 
 if __name__ == "__main__":
