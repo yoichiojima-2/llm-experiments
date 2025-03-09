@@ -38,9 +38,7 @@ class OpenAPIAgent(Agent):
     @property
     def auth_header(self):
         scopes = list(
-            self.spec_raw["components"]["securitySchemes"]["oauth_2_0"]["flows"][
-                "authorizationCode"
-            ]["scopes"].keys()
+            self.spec_raw["components"]["securitySchemes"]["oauth_2_0"]["flows"]["authorizationCode"]["scopes"].keys()
         )
         access_token = spotipy_util.prompt_for_user_token(scope=",".join(scopes))
         return {"Authorization": f"Bearer {access_token}"}
@@ -63,9 +61,7 @@ class SupervisorAgent(Agent):
 
 class SpotifyAgent(Agent):
     def agent(self, model, handle_parsing_errors=True, *a, **kw):
-        return OpenAPIAgent("openapi/spotify.yml").agent(
-            model, handle_parsing_errors=handle_parsing_errors, *a, **kw
-        )
+        return OpenAPIAgent("openapi/spotify.yml").agent(model, handle_parsing_errors=handle_parsing_errors, *a, **kw)
 
 
 class DuckDuckGoAgent(Agent):

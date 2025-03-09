@@ -30,9 +30,7 @@ class SupervisorNode(Node):
         self.agent = agents.SupervisorAgent().agent(self.model, *a, **kw)
 
     class Output(BaseModel):
-        next_agent: Literal["__end__", "spotify", "shell"] = Field(
-            description="The next agent to invoke"
-        )
+        next_agent: Literal["__end__", "spotify", "shell"] = Field(description="The next agent to invoke")
 
     def node(self):
         async def f(
