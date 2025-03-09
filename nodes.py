@@ -19,8 +19,8 @@ class Node(ABC):
     @abstractmethod
     def node(self): ...
 
-    def get_last_message(self, state):
-        return state["messages"][-1]
+    def get_last_message(self, messages):
+        return messages["messages"][-1]
 
 
 class SupervisorNode(Node):
@@ -73,7 +73,7 @@ class ShellNode(Node):
         async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
             payload = {"messages": [self.get_last_message(state)]}
             res = await self.agent.ainvoke(payload)
-            msg = res["messages"][-1]
-            return Command(goto="supervisor", update={"messages": [msg.content]})
+            msg = self.get_last_message(res).content
+            return Command(goto="supervisor", update={"messages": [msg]})
 
         return f
