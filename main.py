@@ -1,16 +1,14 @@
 import asyncio
-import os
 from argparse import ArgumentParser
 
-import langsmith
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
-from langgraph.types import Command
 from playwright.async_api import async_playwright
-from pydantic import BaseModel, Field
+from langgraph.graph import StateGraph, MessagesState, START, END
 
-from utils import parse_base_model
+import nodes
+from utils import print_stream
 
 load_dotenv()
 
@@ -35,36 +33,8 @@ class Playwright:
         await self.playwright.stop()
 
 
-async def supervisor(model, query, agents):
-    class SupervisorOutput(BaseModel):
-        next_agent: str = Field(description="The next agent to invoke")
-
-    c = langsmith.Client(api_key=os.getenv("LANGSMITH_API_KEY"))
-    prompt = c.pull_prompt("homanp/superagent")
-    chain = prompt | model.with_structured_output(SupervisorOutput)
-    res = await chain.ainvoke(
-        {
-            "input": query,
-            "output_format": parse_base_model(SupervisorOutput),
-            "tools": agents,
-        }
-    )
-    return Command(goto=res.next_agent)
-
-
 async def run(query, thread_id="1"):
-    inputs = {"messages": [("user", query)]}
-    config = {"configurable": {"thread_id": thread_id}}
-
-    model = init_chat_model("gpt-4o-mini", model_provider="openai")
-
-    # async with Playwright() as _:
-    #     memory = MemorySaver()
-    #     agent = agents.FileAgent().agent(model, checkpointer=memory)
-
-    #     res = agent.astream(inputs, config, stream_mode="values")
-    #     await print_stream(res)
-
+    ...
 
 async def main():
     args = parse_args()
