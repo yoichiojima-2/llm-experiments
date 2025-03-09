@@ -34,8 +34,8 @@ async def run(query, thread_id="1"):
     graph.add_edge(START, "supervisor")
     app = graph.compile()
 
-    res = await app.ainvoke({"messages": [query]}, config)
-    print(res)
+    async for res in app.astream({"messages": [query]}, config, stream_mode="values"):
+        print(res)
 
 
 async def main():
