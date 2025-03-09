@@ -118,7 +118,6 @@ async def run(query, thread_id="1"):
         await print_stream(res)
 
 
-
 async def main():
     args = parse_args()
     await run(args.query)
