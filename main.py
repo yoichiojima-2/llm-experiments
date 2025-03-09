@@ -2,13 +2,8 @@ import asyncio
 from argparse import ArgumentParser
 
 from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
 from playwright.async_api import async_playwright
-from langgraph.graph import StateGraph, MessagesState, START, END
-
-import nodes
-from utils import print_stream
 
 load_dotenv()
 
@@ -33,8 +28,8 @@ class Playwright:
         await self.playwright.stop()
 
 
-async def run(query, thread_id="1"):
-    ...
+async def run(query, thread_id="1"): ...
+
 
 async def main():
     args = parse_args()
