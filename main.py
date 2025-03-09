@@ -28,7 +28,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class Browser:
+class Playwright:
     async def __aenter__(self):
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch(headless=False)
@@ -46,7 +46,7 @@ class Agent(ABC):
     def agent(self): ...
 
 
-class OpenAPI(Agent):
+class OpenAPIAgent(Agent):
     def __init__(self, spec_path):
         with Path(spec_path).open() as f:
             self.spec_raw = yaml.load(f, Loader=yaml.Loader)
@@ -73,21 +73,26 @@ class OpenAPI(Agent):
         )
 
 
-class Spotify(Agent):
+class SpotifyAgent(Agent):
     def agent(self, model, handle_parsing_errors=True, *a, **kw):
-        return OpenAPI("openapi/spotify.yml").agent(
+        return OpenAPIAgent("openapi/spotify.yml").agent(
             model, handle_parsing_errors=handle_parsing_errors, *a, **kw
         )
 
 
-class DuckDuckGo(Agent):
+class DuckDuckGoAgent(Agent):
     def agent(self, model, *a, **kw):
         return create_react_agent(model, tools=[DuckDuckGoSearchRun()], *a, **kw)
 
 
-class Shell(Agent):
+class ShellAgent(Agent):
     def agent(self, model, *a, **kw):
         return create_react_agent(model, tools=[ShellTool()], *a, **kw)
+
+
+class BrowserAgent(Agent):
+    def agent(self, model, playwright, *a, **kw):
+        return create_react_agent(model, tools=playwright.tools, *a, **kw)
 
 
 async def print_stream(stream):
@@ -100,21 +105,17 @@ async def print_stream(stream):
 
 
 async def run(query, thread_id="1"):
+    inputs = {"messages": [("user", query)]}
     config = {"configurable": {"thread_id": thread_id}}
 
     model = init_chat_model("gpt-4o-mini", model_provider="openai")
-    memory = MemorySaver()
 
-    spotify_agent = Spotify.agent(model, checkpointer=memory)
-    res = spotify_agent.astream({"input": [("user", query)]}, config)
+    memory = MemorySaver()
+    agent = ShellAgent().agent(model, checkpointer=memory)
+
+    res = agent.astream(inputs, config, stream_mode="values")
     await print_stream(res)
 
-    async with Browser() as b:
-        graph = create_react_agent(model, tools=b.tools, checkpointer=memory)
-        res = graph.astream(
-            {"messages": [("user", query)]}, config, stream_mode="values"
-        )
-        await print_stream(res)
 
 
 async def main():
