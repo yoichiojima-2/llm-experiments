@@ -15,9 +15,11 @@ dependencies = [
     "lxml>=5.3.1",
     "playwright>=1.50.0",
     "spotipy>=2.25.1",
+    "wikipedia>=1.4.0",
 ]
 
 [dependency-groups]
 dev = [
+    "isort>=6.0.1",
     "ruff>=0.9.10",
 ]

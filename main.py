@@ -1,22 +1,26 @@
 import asyncio
-import yaml
-from pathlib import Path
-from argparse import ArgumentParser
-from dotenv import load_dotenv
 from abc import ABC, abstractmethod
+from argparse import ArgumentParser
+from pathlib import Path
 
-
+import yaml
+from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
-from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
+from langchain_community.agent_toolkits import (
+    FileManagementToolkit,
+    PlayWrightBrowserToolkit,
+)
 from langchain_community.agent_toolkits.openapi import planner
 from langchain_community.agent_toolkits.openapi.spec import reduce_openapi_spec
-from langchain_community.tools import DuckDuckGoSearchRun, ShellTool
+from langchain_community.tools import DuckDuckGoSearchRun, ShellTool, WikipediaQueryRun
+from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.utilities.requests import RequestsWrapper
+from langchain_core.tools import Tool
+from langchain_experimental.utilities import PythonREPL
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from playwright.async_api import async_playwright
 from spotipy import util as spotipy_util
-
 
 load_dotenv()
 
@@ -82,17 +86,44 @@ class SpotifyAgent(Agent):
 
 class DuckDuckGoAgent(Agent):
     def agent(self, model, *a, **kw):
-        return create_react_agent(model, tools=[DuckDuckGoSearchRun()], *a, **kw)
+        self.tools = [DuckDuckGoSearchRun()]
+        return create_react_agent(model, tools=self.tools, *a, **kw)
 
 
 class ShellAgent(Agent):
     def agent(self, model, *a, **kw):
-        return create_react_agent(model, tools=[ShellTool()], *a, **kw)
+        self.tools = [ShellTool()]
+        return create_react_agent(model, tools=self.tools, *a, **kw)
 
 
 class BrowserAgent(Agent):
     def agent(self, model, playwright, *a, **kw):
-        return create_react_agent(model, tools=playwright.tools, *a, **kw)
+        self.tools = playwright.tools
+        return create_react_agent(model, tools=self.tools, *a, **kw)
+
+
+class PythonAgent(Agent):
+    def agent(self, model, *a, **kw):
+        self.tools = [
+            Tool(
+                name="python_repl",
+                description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
+                func=PythonREPL().run,
+            )
+        ]
+        return create_react_agent(model, tools=self.tools, *a, **kw)
+
+
+class WikipediaAgent(Agent):
+    def agent(self, model, *a, **kw):
+        self.tools = [WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())]
+        return create_react_agent(model, tools=self.tools, *a, **kw)
+
+
+class FileAgent(Agent):
+    def agent(self, model, *a, **kw):
+        self.tools = FileManagementToolkit().get_tools()
+        return create_react_agent(model, tools=self.tools, *a, **kw)
 
 
 async def print_stream(stream):
@@ -112,7 +143,7 @@ async def run(query, thread_id="1"):
 
     async with Playwright() as _:
         memory = MemorySaver()
-        agent = ShellAgent().agent(model, checkpointer=memory)
+        agent = FileAgent().agent(model, checkpointer=memory)
 
         res = agent.astream(inputs, config, stream_mode="values")
         await print_stream(res)
