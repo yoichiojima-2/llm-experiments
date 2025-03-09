@@ -1,17 +1,14 @@
 import asyncio
-import operator
 from argparse import ArgumentParser
-from typing import Annotated
 
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import START, MessagesState, StateGraph
+from langgraph.graph import START, StateGraph
 from playwright.async_api import async_playwright
-from pydantic import Field
 
-from nodes import ShellNode, SpotifyNode, SupervisorNode
+import nodes
 
 load_dotenv()
 
@@ -41,16 +38,11 @@ async def run(query, thread_id="1"):
     config = {"configurable": {"thread_id": thread_id}}
 
     memory = MemorySaver()
-    supervisor = SupervisorNode(model).node()
-    spotify = SpotifyNode(model, checkpointer=memory).node()
-    shell = ShellNode(model, checkpointer=memory).node()
+    supervisor = nodes.SupervisorNode(model).node()
+    spotify = nodes.SpotifyNode(model, checkpointer=memory).node()
+    shell = nodes.ShellNode(model, checkpointer=memory).node()
 
-    class State(MessagesState):
-        scratchpad: Annotated[str, operator.add] = Field(
-            description="A scratchpad for the user to write notes"
-        )
-
-    graph = StateGraph(State)
+    graph = StateGraph(nodes.State)
     graph.add_node("supervisor", supervisor)
     graph.add_node("spotify", spotify)
     graph.add_node("shell", shell)
