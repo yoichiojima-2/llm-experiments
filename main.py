@@ -110,11 +110,12 @@ async def run(query, thread_id="1"):
 
     model = init_chat_model("gpt-4o-mini", model_provider="openai")
 
-    memory = MemorySaver()
-    agent = ShellAgent().agent(model, checkpointer=memory)
+    async with Playwright() as _:
+        memory = MemorySaver()
+        agent = ShellAgent().agent(model, checkpointer=memory)
 
-    res = agent.astream(inputs, config, stream_mode="values")
-    await print_stream(res)
+        res = agent.astream(inputs, config, stream_mode="values")
+        await print_stream(res)
 
 
 
