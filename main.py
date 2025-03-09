@@ -23,7 +23,7 @@ async def run(query, thread_id="1"):
     config = {"configurable": {"thread_id": thread_id}}
 
     memory = MemorySaver()
-    supervisor = nodes.SupervisorNode(model).node()
+    supervisor = nodes.SupervisorNode(model, checkpointer=memory).node()
     spotify = nodes.SpotifyNode(model, checkpointer=memory).node()
     shell = nodes.ShellNode(model, checkpointer=memory).node()
 
