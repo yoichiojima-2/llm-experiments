@@ -1,12 +1,24 @@
 import asyncio
+import yaml
+from pathlib import Path
 from argparse import ArgumentParser
+from dotenv import load_dotenv
+from abc import ABC, abstractmethod
+
 
 from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
+from langchain_community.agent_toolkits.openapi import planner
+from langchain_community.agent_toolkits.openapi.spec import reduce_openapi_spec
 from langchain_community.tools import DuckDuckGoSearchRun, ShellTool
+from langchain_community.utilities.requests import RequestsWrapper
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from playwright.async_api import async_playwright
+from spotipy import util as spotipy_util
+
+
+load_dotenv()
 
 
 def parse_args():
@@ -29,6 +41,55 @@ class Browser:
         await self.playwright.stop()
 
 
+class Agent(ABC):
+    @abstractmethod
+    def agent(self): ...
+
+
+class OpenAPI(Agent):
+    def __init__(self, spec_path):
+        with Path(spec_path).open() as f:
+            self.spec_raw = yaml.load(f, Loader=yaml.Loader)
+            self.spec_reduced = reduce_openapi_spec(self.spec_raw)
+
+    @property
+    def auth_header(self):
+        scopes = list(
+            self.spec_raw["components"]["securitySchemes"]["oauth_2_0"]["flows"][
+                "authorizationCode"
+            ]["scopes"].keys()
+        )
+        access_token = spotipy_util.prompt_for_user_token(scope=",".join(scopes))
+        return {"Authorization": f"Bearer {access_token}"}
+
+    def agent(self, model, *a, **kw):
+        return planner.create_openapi_agent(
+            self.spec_reduced,
+            RequestsWrapper(headers=self.auth_header),
+            model,
+            allow_dangerous_requests=True,  # fixme
+            *a,
+            **kw,
+        )
+
+
+class Spotify(Agent):
+    def agent(self, model, handle_parsing_errors=True, *a, **kw):
+        return OpenAPI("openapi/spotify.yml").agent(
+            model, handle_parsing_errors=handle_parsing_errors, *a, **kw
+        )
+
+
+class DuckDuckGo(Agent):
+    def agent(self, model, *a, **kw):
+        return create_react_agent(model, tools=[DuckDuckGoSearchRun()], *a, **kw)
+
+
+class Shell(Agent):
+    def agent(self, model, *a, **kw):
+        return create_react_agent(model, tools=[ShellTool()], *a, **kw)
+
+
 async def print_stream(stream):
     async for s in stream:
         message = s["messages"][-1]
@@ -39,20 +100,20 @@ async def print_stream(stream):
 
 
 async def run(query, thread_id="1"):
-    inputs = {"messages": [("user", query)]}
     config = {"configurable": {"thread_id": thread_id}}
 
     model = init_chat_model("gpt-4o-mini", model_provider="openai")
     memory = MemorySaver()
 
+    spotify_agent = Spotify.agent(model, checkpointer=memory)
+    res = spotify_agent.astream({"input": [("user", query)]}, config)
+    await print_stream(res)
+
     async with Browser() as b:
-        tools = [
-            *b.tools,
-            DuckDuckGoSearchRun(),
-            ShellTool(),
-        ]
-        graph = create_react_agent(model, tools=tools, checkpointer=memory)
-        res = graph.astream(inputs, config, stream_mode="values")
+        graph = create_react_agent(model, tools=b.tools, checkpointer=memory)
+        res = graph.astream(
+            {"messages": [("user", query)]}, config, stream_mode="values"
+        )
         await print_stream(res)
 
 
