@@ -79,7 +79,6 @@ class SupervisorNode(Node):
                 "tools": INSTALLED_AGENTS,
             }
             res = await chain.ainvoke(payload)
-            print(f"supervisor: {res.next_agent}")
             return Command(goto=res.next_agent)
 
         return f
