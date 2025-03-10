@@ -78,7 +78,8 @@ class SupervisorNode(Node):
                 "tools": INSTALLED_AGENTS,
             }
             res = await chain.ainvoke(payload)
-            return Command(goto=res.next_agent, update={"messages": [res.next_agent]})
+            print(f"next action: {res.next_agent}")
+            return Command(goto=res.next_agent)
 
         return f
 
