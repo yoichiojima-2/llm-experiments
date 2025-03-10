@@ -11,7 +11,7 @@ from langgraph.types import Command
 from pydantic import BaseModel, Field
 
 import agents
-from utils import parse_base_model
+from utils import parse_base_model, get_last_message
 
 logger = getLogger(__name__)
 logger.setLevel("DEBUG")
@@ -45,13 +45,10 @@ class Node:
     model: BaseChatModel
     agent: Runnable
 
-    def get_last_message(self, messages):
-        return messages["messages"][-1]
-
     def node(self):
         async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
-            res = await self.agent.ainvoke({"messages": [self.get_last_message(state)]})
-            return Command(goto="supervisor", update={"messages": [self.get_last_message(res).content]})
+            res = await self.agent.ainvoke({"messages": [get_last_message(state)]})
+            return Command(goto="supervisor", update={"messages": [get_last_message(res).content]})
 
         return f
 
@@ -77,7 +74,7 @@ class SupervisorNode(Node):
             prompt = c.pull_prompt("homanp/superagent")
             chain = prompt | self.model.with_structured_output(self.Output)
             payload = {
-                "input": self.get_last_message(state),
+                "input": get_last_message(state),
                 "output_format": parse_base_model(self.Output),
                 "tools": INSTALLED_AGENTS,
             }
@@ -95,7 +92,7 @@ class SpotifyNode(Node):
 
     def node(self):
         async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
-            payload = {"input": [self.get_last_message(state)]}
+            payload = {"input": [get_last_message(state)]}
             res = await self.agent.ainvoke(payload)
             return Command(goto="supervisor", update={"messages": [res["output"]]})
 

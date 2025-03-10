@@ -17,6 +17,10 @@ class Playwright:
         await self.playwright.stop()
 
 
+def get_last_message(messages):
+    return messages["messages"][-1]
+
+
 async def print_stream(stream):
     async for s in stream:
         message = s["messages"][-1]
