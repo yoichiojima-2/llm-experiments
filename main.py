@@ -8,7 +8,7 @@ from langgraph.graph import START, MessagesState, StateGraph
 
 import agents
 import nodes
-from utils import Playwright
+from utils import Playwright, print_stream
 
 load_dotenv()
 
@@ -50,8 +50,8 @@ async def run(query, thread_id="1"):
     config = {"configurable": {"thread_id": thread_id}}
     async with Playwright() as playwright:
         app = graph(model, playwright)
-        async for res in app.astream({"messages": [query]}, config, stream_mode="values"):
-            print(res["messages"][-1].content)
+        res = app.astream({"messages": [query]}, config, stream_mode="values")
+        await print_stream(res)
 
 
 async def main():
