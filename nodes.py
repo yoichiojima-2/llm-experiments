@@ -58,7 +58,6 @@ class Node:
 
 
 class SupervisorNode(Node):
-    # todo: remove __end__, spotify duplicates
     def __init__(self, model, *a, **kw):
         self.model = model
         self.agent = agents.SupervisorAgent().agent(self.model, *a, **kw)
@@ -79,7 +78,7 @@ class SupervisorNode(Node):
                 "tools": INSTALLED_AGENTS,
             }
             res = await chain.ainvoke(payload)
-            return Command(goto=res.next_agent)
+            return Command(goto=res.next_agent, update={"messages": [res.next_agent]})
 
         return f
 
