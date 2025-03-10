@@ -15,6 +15,18 @@ logger = getLogger(__name__)
 logger.setLevel("DEBUG")
 
 
+INSTALLED_AGENTS = [
+    "spotify",
+    "shell",
+    "__end__",
+]
+
+SUPERVISOR_LITERAL = Literal[
+    "spotify",
+    "shell",
+    "__end__",
+]
+
 class Node(ABC):
     @abstractmethod
     def node(self): ...
@@ -30,21 +42,22 @@ class SupervisorNode(Node):
         self.agent = agents.SupervisorAgent().agent(self.model, *a, **kw)
 
     class Output(BaseModel):
-        next_agent: Literal["__end__", "spotify", "shell"] = Field(description="The next agent to invoke")
+        next_agent: SUPERVISOR_LITERAL = Field(description="The next agent to invoke")
 
     def node(self):
         async def f(
             state: MessagesState,
-        ) -> Command[Literal["__end__", "spotify", "shell"]]:
+        ) -> Command[SUPERVISOR_LITERAL]:
             c = langsmith.Client(api_key=os.getenv("LANGSMITH_API_KEY"))
             prompt = c.pull_prompt("homanp/superagent")
             chain = prompt | self.model.with_structured_output(self.Output)
             payload = {
                 "input": self.get_last_message(state),
                 "output_format": parse_base_model(self.Output),
-                "tools": ["__end__", "spotify", "shell"],
+                "tools": INSTALLED_AGENTS,
             }
             res = await chain.ainvoke(payload)
+            print(f"supervisor: {res.next_agent}")
             return Command(goto=res.next_agent)
 
         return f
