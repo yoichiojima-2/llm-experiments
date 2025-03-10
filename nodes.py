@@ -1,9 +1,11 @@
 import os
-from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from logging import getLogger
 from typing import Literal
 
 import langsmith
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.runnables.base import Runnable
 from langgraph.graph import MessagesState
 from langgraph.types import Command
 from pydantic import BaseModel, Field
@@ -18,21 +20,44 @@ logger.setLevel("DEBUG")
 INSTALLED_AGENTS = [
     "spotify",
     "shell",
+    "python",
+    "duckduckgo",
+    "wikipedia",
+    "browser",
+    "files",
     "__end__",
 ]
 
 SUPERVISOR_LITERAL = Literal[
     "spotify",
     "shell",
+    "python",
+    "duckduckgo",
+    "wikipedia",
+    "browser",
+    "files",
     "__end__",
 ]
 
-class Node(ABC):
-    @abstractmethod
-    def node(self): ...
+
+@dataclass
+class Node:
+    model: BaseChatModel
+    agent: Runnable
 
     def get_last_message(self, messages):
         return messages["messages"][-1]
+
+    def node(self):
+        async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
+            res = await self.agent.ainvoke({"messages": [self.get_last_message(state)]})
+            return Command(goto="supervisor", update={"messages": [self.get_last_message(res).content]})
+
+        return f
+
+    @classmethod
+    def new(cls, model, agent, *a, **kw):
+        return cls(model, agent().agent(model, *a, **kw))
 
 
 class SupervisorNode(Node):
@@ -73,20 +98,5 @@ class SpotifyNode(Node):
             payload = {"input": [self.get_last_message(state)]}
             res = await self.agent.ainvoke(payload)
             return Command(goto="supervisor", update={"messages": [res["output"]]})
-
-        return f
-
-
-class ShellNode(Node):
-    def __init__(self, model, *a, **kw):
-        self.model = model
-        self.agent = agents.ShellAgent().agent(self.model, *a, **kw)
-
-    def node(self):
-        async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
-            payload = {"messages": [self.get_last_message(state)]}
-            res = await self.agent.ainvoke(payload)
-            msg = self.get_last_message(res).content
-            return Command(goto="supervisor", update={"messages": [msg]})
 
         return f

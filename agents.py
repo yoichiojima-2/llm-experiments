@@ -88,6 +88,7 @@ class PythonAgent(Agent):
             Tool(
                 name="python_repl",
                 func=PythonREPL().run,
+                description="Python REPL",
             )
         ]
         return create_react_agent(model, tools=self.tools, *a, **kw)
