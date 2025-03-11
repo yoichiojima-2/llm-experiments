@@ -6,6 +6,7 @@ from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 
+from langgraph.pregel import RetryPolicy
 import agents
 from nodes import Node, SupervisorNode, SpotifyNode
 from utils import Playwright, print_stream
@@ -37,7 +38,7 @@ def graph(model, playwright):
 
     graph = StateGraph(MessagesState)
     graph.add_node("supervisor", supervisor)
-    graph.add_node("spotify", spotify)
+    graph.add_node("spotify", spotify, retry=RetryPolicy())
     graph.add_node("shell", shell)
     graph.add_node("python", python)
     graph.add_node("duckduckgo", duckduckgo)
