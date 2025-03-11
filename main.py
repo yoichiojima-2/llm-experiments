@@ -7,7 +7,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 
 import agents
-import nodes
+from nodes import Node, SupervisorNode, SpotifyNode
 from utils import Playwright, print_stream
 
 load_dotenv()
@@ -22,18 +22,18 @@ def parse_args():
 
 def graph(model, playwright):
     memory = MemorySaver()
-    supervisor = nodes.SupervisorNode(model, checkpointer=memory).node()
-    spotify = nodes.SpotifyNode(model, checkpointer=memory).node()
+    supervisor = SupervisorNode(model, checkpointer=memory).node()
+    spotify = SpotifyNode(model, checkpointer=memory).node()
 
-    shell = nodes.Node.new(model, agents.ShellAgent, checkpointer=memory).node()
-    python = nodes.Node.new(model, agents.PythonAgent, checkpointer=memory).node()
-    duckduckgo = nodes.Node.new(model, agents.DuckDuckGoAgent, checkpointer=memory).node()
-    wikipedia = nodes.Node.new(model, agents.WikipediaAgent, checkpointer=memory).node()
-    browser = nodes.Node.new(model, agents.BrowserAgent, playwright, checkpointer=memory).node()
-    files = nodes.Node.new(model, agents.FileAgent, checkpointer=memory).node()
-    serper = nodes.Node.new(model, agents.SerperAgent, checkpointer=memory).node()
-    tavily = nodes.Node.new(model, agents.TavilyAgent, checkpointer=memory).node()
-    sql = nodes.Node.new(model, agents.SQLAgent, "test.db", checkpointer=memory).node()
+    shell = Node.new(model, agents.ShellAgent, checkpointer=memory).node()
+    python = Node.new(model, agents.PythonAgent, checkpointer=memory).node()
+    duckduckgo = Node.new(model, agents.DuckDuckGoAgent, checkpointer=memory).node()
+    wikipedia = Node.new(model, agents.WikipediaAgent, checkpointer=memory).node()
+    browser = Node.new(model, agents.BrowserAgent, playwright, checkpointer=memory).node()
+    files = Node.new(model, agents.FileAgent, checkpointer=memory).node()
+    serper = Node.new(model, agents.SerperAgent, checkpointer=memory).node()
+    tavily = Node.new(model, agents.TavilyAgent, checkpointer=memory).node()
+    sql = Node.new(model, agents.SQLAgent, "test.db", checkpointer=memory).node()
 
     graph = StateGraph(MessagesState)
     graph.add_node("supervisor", supervisor)
