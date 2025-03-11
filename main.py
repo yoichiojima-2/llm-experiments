@@ -22,9 +22,9 @@ def parse_args():
 
 def graph(model, playwright):
     memory = MemorySaver()
+
     supervisor = SupervisorNode(model, checkpointer=memory).node()
     spotify = SpotifyNode(model, checkpointer=memory).node()
-
     shell = Node.new(model, agents.ShellAgent, checkpointer=memory).node()
     python = Node.new(model, agents.PythonAgent, checkpointer=memory).node()
     duckduckgo = Node.new(model, agents.DuckDuckGoAgent, checkpointer=memory).node()
@@ -48,6 +48,7 @@ def graph(model, playwright):
     graph.add_node("tavily", tavily)
     graph.add_node("sql", sql)
     graph.add_edge(START, "supervisor")
+
     return graph.compile()
 
 
