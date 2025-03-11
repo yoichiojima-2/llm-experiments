@@ -25,6 +25,9 @@ INSTALLED_AGENTS = [
     "wikipedia",
     "browser",
     "files",
+    "serper",
+    "tavily",
+    "sql",
     "__end__",
 ]
 
@@ -36,6 +39,9 @@ SUPERVISOR_LITERAL = Literal[
     "wikipedia",
     "browser",
     "files",
+    "serper",
+    "tavily",
+    "sql",
     "__end__",
 ]
 

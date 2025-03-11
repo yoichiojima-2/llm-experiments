@@ -31,6 +31,9 @@ def graph(model, playwright):
     wikipedia = nodes.Node.new(model, agents.WikipediaAgent, checkpointer=memory).node()
     browser = nodes.Node.new(model, agents.BrowserAgent, playwright, checkpointer=memory).node()
     files = nodes.Node.new(model, agents.FileAgent, checkpointer=memory).node()
+    serper = nodes.Node.new(model, agents.SerperAgent, checkpointer=memory).node()
+    tavily = nodes.Node.new(model, agents.TavilyAgent, checkpointer=memory).node()
+    sql = nodes.Node.new(model, agents.SQLAgent, "test.db", checkpointer=memory).node()
 
     graph = StateGraph(MessagesState)
     graph.add_node("supervisor", supervisor)
@@ -41,6 +44,9 @@ def graph(model, playwright):
     graph.add_node("wikipedia", wikipedia)
     graph.add_node("browser", browser)
     graph.add_node("files", files)
+    graph.add_node("serper", serper)
+    graph.add_node("tavily", tavily)
+    graph.add_node("sql", sql)
     graph.add_edge(START, "supervisor")
     return graph.compile()
 
