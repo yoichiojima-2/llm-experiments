@@ -1,3 +1,4 @@
+import asyncio
 import os
 from dataclasses import dataclass
 from logging import getLogger
@@ -16,7 +17,6 @@ from utils import parse_base_model, get_last_message
 logger = getLogger(__name__)
 logger.setLevel("DEBUG")
 
-
 INSTALLED_AGENTS = [
     "spotify",
     "shell",
@@ -28,7 +28,7 @@ INSTALLED_AGENTS = [
     "serper",
     "tavily",
     "sql",
-    "__end__",
+    "user",
 ]
 
 SUPERVISOR_LITERAL = Literal[
@@ -42,7 +42,7 @@ SUPERVISOR_LITERAL = Literal[
     "serper",
     "tavily",
     "sql",
-    "__end__",
+    "user",
 ]
 
 
@@ -88,6 +88,26 @@ class SupervisorNode(Node):
             return Command(goto=res.next_agent)
 
         return f
+
+
+class UserNode(Node):
+    def __init__(self, model, *a, **kw):
+        self.model = model
+
+    @staticmethod
+    async def interrupt(prompt: str) -> str:
+        return await asyncio.to_thread(input, prompt)
+
+    def node(self):
+        async def f(state: MessagesState) -> Command[Literal["supervisor"]]:
+            user_input = await self.interrupt("input: ")
+            if user_input == "exit":
+                return Command(goto="supervisor", update={"messages": ["Goodbye!"]})
+            else:
+                return Command(goto="supervisor", update={"messages": [user_input]})
+
+        return f
+
 
 
 class SpotifyNode(Node):

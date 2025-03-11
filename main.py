@@ -8,8 +8,9 @@ from langgraph.graph import START, MessagesState, StateGraph
 
 from langgraph.pregel import RetryPolicy
 import agents
-from nodes import Node, SupervisorNode, SpotifyNode
+from nodes import Node, SupervisorNode, SpotifyNode, UserNode
 from utils import Playwright, print_stream
+
 
 load_dotenv()
 
@@ -22,19 +23,18 @@ def parse_args():
 
 
 def graph(model, playwright):
-    memory = MemorySaver()
-
-    supervisor = SupervisorNode(model, checkpointer=memory).node()
-    spotify = SpotifyNode(model, checkpointer=memory).node()
-    shell = Node.new(model, agents.ShellAgent, checkpointer=memory).node()
-    python = Node.new(model, agents.PythonAgent, checkpointer=memory).node()
-    duckduckgo = Node.new(model, agents.DuckDuckGoAgent, checkpointer=memory).node()
-    wikipedia = Node.new(model, agents.WikipediaAgent, checkpointer=memory).node()
-    browser = Node.new(model, agents.BrowserAgent, playwright, checkpointer=memory).node()
-    files = Node.new(model, agents.FileAgent, checkpointer=memory).node()
-    serper = Node.new(model, agents.SerperAgent, checkpointer=memory).node()
-    tavily = Node.new(model, agents.TavilyAgent, checkpointer=memory).node()
-    sql = Node.new(model, agents.SQLAgent, "test.db", checkpointer=memory).node()
+    supervisor = SupervisorNode(model).node()
+    spotify = SpotifyNode(model).node()
+    user = UserNode(model).node()
+    shell = Node.new(model, agents.ShellAgent).node()
+    python = Node.new(model, agents.PythonAgent).node()
+    duckduckgo = Node.new(model, agents.DuckDuckGoAgent).node()
+    wikipedia = Node.new(model, agents.WikipediaAgent).node()
+    browser = Node.new(model, agents.BrowserAgent, playwright).node()
+    files = Node.new(model, agents.FileAgent).node()
+    serper = Node.new(model, agents.SerperAgent).node()
+    tavily = Node.new(model, agents.TavilyAgent).node()
+    sql = Node.new(model, agents.SQLAgent, "test.db").node()
 
     graph = StateGraph(MessagesState)
     graph.add_node("supervisor", supervisor)
@@ -48,9 +48,10 @@ def graph(model, playwright):
     graph.add_node("serper", serper)
     graph.add_node("tavily", tavily)
     graph.add_node("sql", sql)
+    graph.add_node("user", user)
     graph.add_edge(START, "supervisor")
 
-    return graph.compile()
+    return graph.compile(checkpointer=MemorySaver())
 
 
 async def run(query, thread_id="1"):
@@ -58,6 +59,7 @@ async def run(query, thread_id="1"):
     config = {"configurable": {"thread_id": thread_id}}
     async with Playwright() as playwright:
         app = graph(model, playwright)
+
         res = app.astream({"messages": [query]}, config, stream_mode="values")
         await print_stream(res)
 
