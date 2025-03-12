@@ -16,6 +16,7 @@ dependencies = [
     "playwright>=1.50.0",
     "python-dotenv>=1.0.1",
     "spotipy>=2.25.1",
+    "urllib3>=2.3.0",
     "wikipedia>=1.4.0",
 ]
 

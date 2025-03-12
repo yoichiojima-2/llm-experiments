@@ -66,11 +66,6 @@ class OpenAPIAgent(Agent):
         )
 
 
-class SupervisorAgent(Agent):
-    def agent(self, model, *a, **kw):
-        return create_react_agent(model, [], *a, **kw)
-
-
 class SpotifyAgent(Agent):
     def agent(self, model, handle_parsing_errors=True, *a, **kw):
         return OpenAPIAgent("openapi/spotify.yml").agent(model, handle_parsing_errors=handle_parsing_errors, *a, **kw)

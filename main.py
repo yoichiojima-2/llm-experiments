@@ -19,10 +19,11 @@ def parse_args():
     parser = ArgumentParser()
     opt = parser.add_argument
     opt("-q", "--query", required=True)
+    opt("--thread-id", default="default")
     return parser.parse_args()
 
 
-def graph(model, playwright):
+def graph(model, db_name, playwright):
     supervisor = SupervisorNode(model).node()
     spotify = SpotifyNode(model).node()
     user = UserNode(model).node()
@@ -34,7 +35,7 @@ def graph(model, playwright):
     files = Node.new(model, agents.FileAgent).node()
     serper = Node.new(model, agents.SerperAgent).node()
     tavily = Node.new(model, agents.TavilyAgent).node()
-    sql = Node.new(model, agents.SQLAgent, "test.db").node()
+    sql = Node.new(model, agents.SQLAgent, db_name).node()
 
     graph = StateGraph(MessagesState)
     graph.add_node("supervisor", supervisor)
@@ -50,23 +51,21 @@ def graph(model, playwright):
     graph.add_node("sql", sql)
     graph.add_node("user", user)
     graph.add_edge(START, "supervisor")
-
     return graph.compile(checkpointer=MemorySaver())
 
 
 async def run(query, thread_id="1"):
     model = init_chat_model("gpt-4o-mini", model_provider="openai")
     config = {"configurable": {"thread_id": thread_id}}
-    async with Playwright() as playwright:
-        app = graph(model, playwright)
-
+    async with Playwright() as pw:
+        app = graph(model, "test.db", pw)
         res = app.astream({"messages": [query]}, config, stream_mode="values")
         await print_stream(res)
 
 
 async def main():
     args = parse_args()
-    await run(args.query)
+    await run(args.query, args.thread_id)
 
 
 if __name__ == "__main__":
