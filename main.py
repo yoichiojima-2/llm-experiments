@@ -5,12 +5,11 @@ from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
-
 from langgraph.pregel import RetryPolicy
-import agents
-from nodes import Node, SupervisorNode, SpotifyNode, UserNode
-from utils import Playwright, print_stream
 
+import agents
+from nodes import Node, SpotifyNode, SupervisorNode, UserNode
+from utils import Playwright, print_stream
 
 load_dotenv()
 

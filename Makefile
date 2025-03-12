@@ -9,6 +9,7 @@ clean:
 	find . -name .mypy_cache -type d -exec rm -rf {} +
 
 lint:
+	${UV} isort .
 	${UV} ruff check --fix .
 	${UV} ruff format .
 

@@ -12,7 +12,7 @@ from langgraph.types import Command
 from pydantic import BaseModel, Field
 
 import agents
-from utils import parse_base_model, get_last_message
+from utils import get_last_message, parse_base_model
 
 logger = getLogger(__name__)
 logger.setLevel("DEBUG")
