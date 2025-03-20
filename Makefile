@@ -1,7 +1,11 @@
 UV = uv run
 
+install:
+	uv sync
+	uv pip install -e .
+
 clean:
-	find . -name "*.ipynb" -type f -exec ${UV} jupyter nbconvert --clear-output {} +
+	find . -name "*.ipynb" -type f -exec uv run jupyter nbconvert --clear-output {} +
 	find . -name .venv -type d -exec rm -rf {} +
 	find . -name __pycache__ -type d -exec rm -rf {} +
 	find . -name .pytest_cache -type d -exec rm -rf {} +
@@ -13,11 +17,11 @@ clean:
 	find . -name "*.egg-info" -type d -exec rm -rf {} +
 
 lint:
-	${UV} isort .
-	${UV} ruff check --fix .
-	${UV} ruff format .
+	uv run isort .
+	uv run ruff check --fix .
+	uv run ruff format .
 
 pre-commit: lint clean
 
 test:
-	${UV} pytest -vvv
+	uv run pytest -vvv
