@@ -30,7 +30,7 @@ __all__ = [
     "FileAgent",
 ]
 
-DB_DIR = Path(__file__).parent / "db"
+DB_DIR = Path(__file__).parent.parent.parent / "db"
 
 
 class Agent(ABC):
