@@ -20,18 +20,6 @@ from spotipy import util as spotipy_util
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
-__all__ = [
-    "SpotifyAgent",
-    "DuckDuckGoAgent",
-    "ShellAgent",
-    "BrowserAgent",
-    "PythonAgent",
-    "WikipediaAgent",
-    "FileAgent",
-]
-
-DB_DIR = Path(__file__).parent.parent.parent / "db"
-
 
 class Agent(ABC):
     @abstractmethod
@@ -140,7 +128,8 @@ class TavilyAgent(Agent):
 
 class SQLAgent(Agent):
     def agent(self, model, db_name, *a, **kw):
-        path = DB_DIR / f"{db_name}.db"
+        db_dir = Path(__file__).parent.parent.parent / "db"
+        path = db_dir / f"{db_name}.db"
         path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(path, check_same_thread=False)
         engine = create_engine(
