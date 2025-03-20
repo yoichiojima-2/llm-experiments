@@ -24,4 +24,4 @@ lint:
 pre-commit: lint clean
 
 test:
-	uv run pytest -vvv
+	uv run pytest -vvv -s
