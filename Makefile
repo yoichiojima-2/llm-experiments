@@ -9,8 +9,8 @@ clean:
 	find . -name .mypy_cache -type d -exec rm -rf {} +
 	find . -name .ipynb_checkpoints -type d -exec rm -rf {} +
 	find . -name .cache -type f -exec rm {} +
-	-rm .cache
-	-rm uv.lock
+	find . -name uv.lock -type f -exec rm {} +
+	find . -name "*.egg-info" -type d -exec rm -rf {} +
 
 lint:
 	${UV} isort .
