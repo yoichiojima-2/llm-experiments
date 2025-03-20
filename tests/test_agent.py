@@ -22,69 +22,79 @@ def model():
 
 @pytest.mark.asyncio
 async def test_spotify_agent(model):
-    agent = SpotifyAgent().agent(model)
-    await agent.ainvoke({"input": "what is the most popular song on spotify?"})
+    agent = SpotifyAgent(model)
+    res = await agent.agent().ainvoke({"input": "show me the tracklist of sgt. pepper's lonely hearts club band"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_duck_duck_go_agent(model):
-    agent = DuckDuckGoAgent().agent(model)
-    await agent.ainvoke({"messages": "what is the capital of france?"})
+    agent = DuckDuckGoAgent(model)
+    res = await agent.agent().ainvoke({"messages": "what is the capital of france?"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_shell_agent(model):
-    agent = ShellAgent().agent(model)
-    await agent.ainvoke({"messages": "ls"})
+    agent = ShellAgent(model)
+    res = await agent.agent().ainvoke({"messages": "ls"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_browser_agent(model):
-    agent = await BrowserAgent().agent(model)
-    await agent.ainvoke({"messages": "what is the capital of france?"})
+    agent = await BrowserAgent(model)
+    res = await agent.agent().ainvoke({"messages": "what is the capital of france?"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_python_agent(model):
-    agent = PythonAgent().agent(model)
-    await agent.ainvoke({"messages": "print('hello world')"})
+    agent = PythonAgent(model)
+    res = await agent.agent().ainvoke({"messages": "print('hello world')"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_wikipedia_agent(model):
-    agent = WikipediaAgent().agent(model)
-    await agent.ainvoke({"messages": "who is the president of the united states?"})
+    agent = WikipediaAgent(model)
+    res = await agent.agent().ainvoke({"messages": "who is the president of the united states?"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_file_agent(model):
-    agent = FileAgent().agent(model)
-    await agent.ainvoke({"messages": "ls"})
+    agent = FileAgent(model)
+    res = await agent.agent().ainvoke({"messages": "ls"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_serper_agent(model):
-    agent = SerperAgent().agent(model)
-    await agent.ainvoke({"messages": "what is the capital of france?"})
+    agent = SerperAgent(model)
+    res = await agent.agent().ainvoke({"messages": "what is the capital of france?"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_tavily_agent(model):
-    agent = TavilyAgent().agent(model)
-    await agent.ainvoke({"messages": "what is the capital of france?"})
+    agent = TavilyAgent(model)
+    res = await agent.agent().ainvoke({"messages": "what is the capital of france?"})
+    print(agent.get_last_response(res))
     assert True
 
 
 @pytest.mark.asyncio
 async def test_sql_agent(model):
-    agent = SQLAgent().agent(model, db_name="test")
-    await agent.ainvoke({"messages": "select * from users"})
+    agent = SQLAgent(model, db_name="test")
+    res = await agent.agent().ainvoke({"messages": "select * from users"})
+    print(agent.get_last_response(res))
     assert True
