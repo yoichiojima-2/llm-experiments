@@ -34,8 +34,6 @@ DB_DIR = Path(__file__).parent / "db"
 
 
 class Agent(ABC):
-    tools: list = []
-
     @abstractmethod
     def agent(self): ...
 
