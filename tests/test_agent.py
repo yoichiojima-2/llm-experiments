@@ -46,10 +46,14 @@ async def test_shell_agent(model):
 
 @pytest.mark.asyncio
 async def test_browser_agent(model):
-    agent = await BrowserAgent(model)
-    res = await agent.agent().ainvoke({"messages": "what is the capital of france?"})
-    print(agent.get_last_response(res))
-    assert True
+    from playwright.async_api import async_playwright
+
+    async with async_playwright() as p:
+        agent = BrowserAgent(model, p)
+        agt = await agent.agent(verbose=True)
+        res = await agt.ainvoke({"input": "what is the weather in tokyo?"})
+        print(agent.get_last_response(res))
+        assert True
 
 
 @pytest.mark.asyncio

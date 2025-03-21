@@ -10,7 +10,6 @@ from langchain_community.agent_toolkits.openapi import planner
 from langchain_community.agent_toolkits.openapi.spec import reduce_openapi_spec
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain_community.tools import DuckDuckGoSearchRun, ShellTool, WikipediaQueryRun
-from langchain_community.tools.playwright.utils import create_async_playwright_browser
 from langchain_community.utilities import GoogleSerperAPIWrapper, WikipediaAPIWrapper
 from langchain_community.utilities.requests import RequestsWrapper
 from langchain_community.utilities.sql_database import SQLDatabase
@@ -90,8 +89,12 @@ class ShellAgent(Agent):
 
 
 class BrowserAgent(Agent):
+    def __init__(self, model, playwright):
+        self.model = model
+        self.playwright = playwright
+
     async def agent(self, *a, **kw):
-        browser = await create_async_playwright_browser()
+        browser = await self.playwright.chromium.launch()
         tools = PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
         return initialize_agent(
             tools,
@@ -100,6 +103,10 @@ class BrowserAgent(Agent):
             *a,
             **kw,
         )
+
+    @staticmethod
+    def get_last_response(res):
+        return res["output"]
 
 
 class PythonAgent(Agent):
