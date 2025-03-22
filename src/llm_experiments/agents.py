@@ -78,15 +78,19 @@ class SpotifyAgent(Agent):
 
 
 class DuckDuckGoAgent(Agent):
+    def tools(self):
+        return [DuckDuckGoSearchRun()]
+
     def agent(self, *a, **kw):
-        self.tools = [DuckDuckGoSearchRun()]
-        return create_react_agent(self.model, tools=self.tools, *a, **kw)
+        return create_react_agent(self.model, tools=self.tools(), *a, **kw)
 
 
 class ShellAgent(Agent):
+    def tools(self):
+        return [ShellTool()]
+
     def agent(self, *a, **kw):
-        self.tools = [ShellTool()]
-        return create_react_agent(self.model, tools=self.tools, *a, **kw)
+        return create_react_agent(self.model, tools=self.tools(), *a, **kw)
 
 
 @dataclass
@@ -94,9 +98,12 @@ class BrowserAgent(Agent):
     model: BaseChatModel
     playwright: Playwright
 
-    async def agent(self, *a, **kw):
+    async def tools(self):
         browser = await self.playwright.chromium.launch(headless=False)
-        tools = PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
+        return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
+
+    async def agent(self, *a, **kw):
+        tools = await self.tools()
         return initialize_agent(
             tools,
             self.model,
@@ -111,46 +118,56 @@ class BrowserAgent(Agent):
 
 
 class PythonAgent(Agent):
-    def agent(self, *a, **kw):
-        self.tools = [
+    def tools(self):
+        return [
             Tool(
                 name="python_repl",
                 func=PythonREPL().run,
                 description="Python REPL",
             )
         ]
-        return create_react_agent(self.model, tools=self.tools, *a, **kw)
+
+    def agent(self, *a, **kw):
+        return create_react_agent(self.model, tools=self.tools(), *a, **kw)
 
 
 class WikipediaAgent(Agent):
+    def tools(self):
+        return [WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())]
+
     def agent(self, *a, **kw):
-        self.tools = [WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())]
-        return create_react_agent(self.model, tools=self.tools, *a, **kw)
+        return create_react_agent(self.model, tools=self.tools(), *a, **kw)
 
 
 class FileAgent(Agent):
+    def tools(self):
+        return FileManagementToolkit().get_tools()
+
     def agent(self, *a, **kw):
-        self.tools = FileManagementToolkit().get_tools()
-        return create_react_agent(self.model, tools=self.tools, *a, **kw)
+        return create_react_agent(self.model, tools=self.tools(), *a, **kw)
 
 
 class SerperAgent(Agent):
+    def tools(self):
+        return [GoogleSerperAPIWrapper().run]
+
     def agent(self, *a, **kw):
-        self.tools = [GoogleSerperAPIWrapper().run]
-        return create_react_agent(self.model, tools=self.tools, *a, **kw)
+        return create_react_agent(self.model, tools=self.tools(), *a, **kw)
 
 
 class TavilyAgent(Agent):
+    def tools(self):
+        return [TavilySearch(max_results=5)]
+
     def agent(self, *a, **kw):
-        self.tools = [TavilySearch(max_results=5)]
-        return create_react_agent(self.model, tools=self.tools, *a, **kw)
+        return create_react_agent(self.model, tools=self.tools(), *a, **kw)
 
 
 @dataclass
 class SQLAgent(Agent):
     db_name: str
 
-    def agent(self, *a, **kw):
+    def tools(self):
         db_dir = Path(__file__).parent.parent.parent / "db"
         path = db_dir / f"{self.db_name}.db"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -162,5 +179,7 @@ class SQLAgent(Agent):
             connect_args={"check_same_thread": False},
         )
         db = SQLDatabase(engine)
-        self.tools = SQLDatabaseToolkit(db=db, llm=self.model).get_tools()
-        return create_react_agent(self.model, tools=self.tools, *a, **kw)
+        return SQLDatabaseToolkit(db=db, llm=self.model).get_tools()
+
+    def agent(self, *a, **kw):
+        return create_react_agent(self.model, tools=self.tools(), *a, **kw)
