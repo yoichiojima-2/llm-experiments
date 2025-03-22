@@ -51,7 +51,7 @@ async def test_browser_agent(model):
     async with async_playwright() as p:
         agent = BrowserAgent(model, p)
         agt = await agent.agent(verbose=True)
-        res = await agt.ainvoke({"input": "what is the weather in tokyo?"})
+        res = await agt.ainvoke({"input": "search today's news"})
         print(agent.get_last_response(res))
         assert True
 

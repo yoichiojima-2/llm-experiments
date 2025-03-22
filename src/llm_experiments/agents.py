@@ -94,7 +94,7 @@ class BrowserAgent(Agent):
         self.playwright = playwright
 
     async def agent(self, *a, **kw):
-        browser = await self.playwright.chromium.launch()
+        browser = await self.playwright.chromium.launch(headless=False)
         tools = PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
         return initialize_agent(
             tools,
