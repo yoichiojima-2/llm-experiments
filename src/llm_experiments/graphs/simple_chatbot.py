@@ -1,14 +1,11 @@
 import asyncio
 from typing import Annotated
 
-from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
-
-load_dotenv()
 
 
 class State(TypedDict):
