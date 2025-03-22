@@ -1,4 +1,5 @@
 import pytest
+from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 
 from llm_experiments.agents import (
@@ -13,6 +14,8 @@ from llm_experiments.agents import (
     TavilyAgent,
     WikipediaAgent,
 )
+
+load_dotenv()
 
 
 @pytest.fixture
