@@ -18,6 +18,7 @@ from langchain_core.tools import Tool
 from langchain_experimental.utilities import PythonREPL
 from langchain_tavily import TavilySearch
 from langgraph.prebuilt import create_react_agent
+from playwright.async_api import Playwright
 from spotipy import util as spotipy_util
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
@@ -88,10 +89,10 @@ class ShellAgent(Agent):
         return create_react_agent(self.model, tools=self.tools, *a, **kw)
 
 
+@dataclass
 class BrowserAgent(Agent):
-    def __init__(self, model, playwright):
-        self.model = model
-        self.playwright = playwright
+    model: BaseChatModel
+    playwright: Playwright
 
     async def agent(self, *a, **kw):
         browser = await self.playwright.chromium.launch(headless=False)
