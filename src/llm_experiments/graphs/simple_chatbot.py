@@ -11,20 +11,17 @@ class State(TypedDict):
     messages: Annotated[list[str], add_messages]
 
 
-def model():
-    return init_chat_model("gpt-4o-mini", model_provider="openai")
-
-
 def chatbot(state: State):
-    return {"messages": [model().invoke(state["messages"])]}
+    model = init_chat_model("gpt-4o-mini", model_provider="openai")
+    return {"messages": [model.invoke(state["messages"])]}
 
 
 def graph():
-    graph_builder = StateGraph(State)
-    graph_builder.add_node("chatbot", chatbot)
-    graph_builder.add_edge(START, "chatbot")
-    graph_builder.add_edge("chatbot", END)
-    return graph_builder.compile(checkpointer=MemorySaver())
+    builder = StateGraph(State)
+    builder.add_node("chatbot", chatbot)
+    builder.add_edge(START, "chatbot")
+    builder.add_edge("chatbot", END)
+    return builder.compile(checkpointer=MemorySaver())
 
 
 def main():
