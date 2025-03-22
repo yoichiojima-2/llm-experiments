@@ -1,5 +1,3 @@
-UV = uv run
-
 install:
 	uv sync
 	uv pip install -e .
