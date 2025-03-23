@@ -26,9 +26,9 @@ def graph():
     return builder.compile(checkpointer=MemorySaver())
 
 
-async def main():
+async def main(thread_id="simple_chatbot"):
     g = graph()
-    config = {"thread_id": "test"}
+    config = {"thread_id": thread_id}
     while True:
         user_input = input("user: ")
         res = await g.ainvoke({"messages": [user_input]}, config=config)
