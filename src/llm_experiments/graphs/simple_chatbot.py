@@ -1,11 +1,12 @@
 import asyncio
 from typing import Annotated
 
-from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
+
+from llm_experiments.llm import create_model
 
 
 class State(TypedDict):
@@ -13,7 +14,7 @@ class State(TypedDict):
 
 
 def chatbot(state: State):
-    model = init_chat_model("gpt-4o-mini", model_provider="openai")
+    model = create_model()
     return {"messages": [model.invoke(state["messages"])]}
 
 

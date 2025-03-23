@@ -1,5 +1,4 @@
 import pytest
-from langchain.chat_models import init_chat_model
 
 from llm_experiments.agents import (
     BrowserAgent,
@@ -13,11 +12,12 @@ from llm_experiments.agents import (
     TavilyAgent,
     WikipediaAgent,
 )
+from llm_experiments.llm import create_model
 
 
 @pytest.fixture
 def model():
-    return init_chat_model("gpt-4o-mini", model_provider="openai")
+    return create_model()
 
 
 @pytest.mark.asyncio

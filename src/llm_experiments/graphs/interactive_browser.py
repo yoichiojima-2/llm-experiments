@@ -1,14 +1,15 @@
 import asyncio
 
-from langchain.chat_models import init_chat_model
 from playwright.async_api import async_playwright
 
 from llm_experiments.agents import BrowserAgent
+from llm_experiments.llm import create_model
 
 
 async def main():
     async with async_playwright() as p:
-        browser_agent = BrowserAgent(init_chat_model("gpt-4o-mini", model_provider="openai"), p)
+        model = create_model()
+        browser_agent = BrowserAgent(model, p)
         agent = await browser_agent.agent(verbose=True)
         while True:
             user_input = input("user: ")
@@ -18,4 +19,5 @@ async def main():
             print("assistant:", res["output"])
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
