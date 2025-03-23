@@ -2,6 +2,7 @@ import asyncio
 
 from langchain.chat_models import init_chat_model
 from playwright.async_api import async_playwright
+
 from llm_experiments.agents import BrowserAgent
 
 
