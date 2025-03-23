@@ -1,6 +1,7 @@
 import asyncio
 from typing import Annotated
 
+from dotenv import load_dotenv
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
@@ -35,4 +36,6 @@ async def main(thread_id="simple_chatbot"):
         print(f"assistant: {res['messages'][-1].content}")
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    load_dotenv()
+    asyncio.run(main())
