@@ -7,9 +7,9 @@ from llm_experiments.llm import create_model
 
 
 async def main():
-    async with async_playwright() as p:
+    async with async_playwright() as playwright:
         model = create_model()
-        browser_agent = BrowserAgent(model, p)
+        browser_agent = BrowserAgent(model, playwright)
         agent = await browser_agent.agent(verbose=True)
         while True:
             user_input = input("user: ")
