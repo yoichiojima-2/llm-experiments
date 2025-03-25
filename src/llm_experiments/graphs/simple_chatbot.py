@@ -32,8 +32,11 @@ async def main(thread_id="simple_chatbot"):
     config = {"thread_id": thread_id}
     while True:
         user_input = input("user: ")
-        res = await g.ainvoke({"messages": [user_input]}, config=config)
-        print(f"assistant: {res['messages'][-1].content}")
+        print("\n")
+        print("assitant: ", end="")
+        async for i in g.astream({"messages": [user_input]}, config=config, stream_mode="messages"):
+            print(i[0].content, end="")
+        print("\n\n")
 
 
 if __name__ == "__main__":
