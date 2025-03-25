@@ -1,5 +1,6 @@
 import asyncio
 from typing import Annotated
+from argparse import ArgumentParser
 
 from dotenv import load_dotenv
 from langgraph.checkpoint.memory import MemorySaver
@@ -10,32 +11,46 @@ from typing_extensions import TypedDict
 from llm_experiments.llm import create_model
 
 
+def parse_args():
+    parser = ArgumentParser()
+    opt = parser.add_argument
+    opt("--model", default="gpt-4o-mini", help="model to use")
+    opt("--thread-id", default="simple_chatbot", help="thread id")
+    return parser.parse_args()
+
+
 class State(TypedDict):
     messages: Annotated[list[str], add_messages]
 
 
-def chatbot(state: State):
-    model = create_model()
-    return {"messages": [model.invoke(state["messages"])]}
+
+class ChatBot:
+    def __init__(self, model: str):
+        self.model = create_model(model)
+
+    def chat(self, state: State):
+        return {"messages": [self.model.invoke(state["messages"])]}
 
 
-def graph():
+def graph(model: str):
+    chatbot = ChatBot(model)
     builder = StateGraph(State)
-    builder.add_node("chatbot", chatbot)
+    builder.add_node("chatbot", chatbot.chat)
     builder.add_edge(START, "chatbot")
     builder.add_edge("chatbot", END)
     return builder.compile(checkpointer=MemorySaver())
 
 
-async def main(thread_id="simple_chatbot"):
-    g = graph()
-    config = {"thread_id": thread_id}
+async def main():
+    args = parse_args()
+    g = graph(args.model)
+    config = {"thread_id": args.thread_id}
     while True:
         user_input = input("user: ")
         print("\n")
         print("assitant: ", end="")
         async for i in g.astream({"messages": [user_input]}, config=config, stream_mode="messages"):
-            print(i[0].content, end="")
+            print(i[0].content, end="", flush=True)
         print("\n\n")
 
 
