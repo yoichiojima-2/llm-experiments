@@ -17,8 +17,8 @@ def main():
         )
         model = create_model("gpt-o3-mini")
         agent = create_react_agent(model, tools.shell())
-        res = agent.invoke({"messages": prompt})
 
+        res = agent.invoke({"messages": prompt})
         for i in res["messages"]:
             print(i.content)
 
