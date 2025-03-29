@@ -1,8 +1,7 @@
-from playwright.async_api import Playwright
-
-from llm_experiments.llm import create_model
-from llm_experiments import tools
 from langgraph.prebuilt import create_react_agent
+
+from llm_experiments import tools
+from llm_experiments.llm import create_model
 
 
 def test_duckduckgo_tools():
@@ -11,7 +10,10 @@ def test_duckduckgo_tools():
     last_msg = res["messages"][-1].content
     assert last_msg
     print(last_msg)
-    
+
+
+def test_browser(): ...
+
 
 def test_shell_tools():
     agent = create_react_agent(create_model(), tools.shell())
@@ -68,5 +70,3 @@ def test_sql_tools():
     last_msg = res["messages"][-1].content
     assert last_msg
     print(last_msg)
-
-
