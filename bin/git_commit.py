@@ -1,7 +1,7 @@
 import sys
 import textwrap
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 from langgraph.prebuilt import create_react_agent
 
 from llm_experiments import tools
