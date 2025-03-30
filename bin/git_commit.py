@@ -1,5 +1,6 @@
 import sys
 import textwrap
+from dotenv import load_dotenv
 
 from langgraph.prebuilt import create_react_agent
 
@@ -11,8 +12,8 @@ def main():
     try:
         prompt = textwrap.dedent(
             """
-            your task is create git commit with concise and readable commit messages with given shell tool.
-            inspect git diff and git add by lines, then git commit repeatedly to avoid making too large or multi-purpose commits.
+            your task is create git commit with a concise and readable commit message with the given shell tool.
+            execute `git diff` to inspect changes and execute git add & commit with nice message.
             """
         )
         model = create_model("gpt-o3-mini")
@@ -27,4 +28,5 @@ def main():
 
 
 if __name__ == "__main__":
+    load_dotenv()
     main()
