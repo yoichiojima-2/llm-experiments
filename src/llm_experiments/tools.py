@@ -11,45 +11,49 @@ from langchain_experimental.utilities import PythonREPL
 from langchain_tavily import TavilySearch
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
+from langchain_core.tools import tool
 
 
 def duckduckgo():
-    return [DuckDuckGoSearchRun()]
+    return DuckDuckGoSearchRun()
 
 
 def shell():
-    return [ShellTool()]
+    return ShellTool()
 
 
-async def browser(playwright):
+async def browser_tools(playwright):
     browser = await playwright.chromium.launch(headless=False)
     return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
 
 
-def python_repl():
-    return [
-        Tool(
-            name="python_repl",
-            func=PythonREPL().run,
-            description="Python REPL",
-        )
-    ]
+@tool
+def python_repl(script: str) -> str:
+    """
+    python repl environment
+    """
+    return PythonREPL().run(script)
 
 
 def wikipedia():
-    return [WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())]
+    return WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
 
 
-def file_management():
+def file_management_tools():
     return FileManagementToolkit().get_tools()
 
 
-def serper():
-    return [GoogleSerperAPIWrapper().run]
+@tool
+def serper(query: str) -> str:
+    """
+    serper search
+    """
+    return GoogleSerperAPIWrapper().run(query)
+
 
 
 def tavily():
-    return [TavilySearch(max_results=5)]
+    return TavilySearch(max_results=5)
 
 
 def sql(model, db_name):
