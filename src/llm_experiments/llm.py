@@ -10,7 +10,7 @@ def create_model(model="4o-mini", *a, **kw):
         case "gemini":
             return init_chat_model("google_genai:gemini-2.0-flash", *a, **kw)
         case "deepseek":
-            return init_chat_model("lllama:deepseek-r1:latest", *a, **kw)
+            return init_chat_model("ollama:deepseek-r1:latest", *a, **kw)
         case "llama":
             return init_chat_model("ollama:llama3:latest", *a, **kw)
         case _:
