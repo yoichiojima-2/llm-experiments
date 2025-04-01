@@ -1,9 +1,12 @@
 import textwrap
+
 from langchain_core.prompts import PromptTemplate
 
+
 def multipurpose():
-    return PromptTemplate.from_template(textwrap.dedent(
-        """
+    return PromptTemplate.from_template(
+        textwrap.dedent(
+            """
         Answer the following questions as best you can. You have access to the following tools:
 
         {tools}
@@ -24,4 +27,5 @@ def multipurpose():
         Question: {input}
         Thought:{agent_scratchpad}
         """
-    ))
+        )
+    )
