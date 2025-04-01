@@ -7,6 +7,17 @@ from llm_experiments import prompts, tools
 from llm_experiments.llm import create_model
 
 
+def agent(model, verbose=False) -> None:
+    prompt = prompts.multipurpose()
+    tool_list = [
+        tools.duckduckgo(),
+        tools.tavily(),
+        tools.serper(),
+    ]
+    agent = create_react_agent(model, tool_list, prompt=prompt)
+    return AgentExecutor(agent=agent, tools=tool_list, handle_parsing_errors=True, verbose=verbose)
+
+
 def parse_args():
     parser = ArgumentParser()
     opt = parser.add_argument
@@ -16,21 +27,14 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(query: str, model_opt: str, verbose=False) -> None:
-    model = create_model(model_opt)
-    prompt = prompts.multipurpose()
-
-    tool_list = [tools.duckduckgo(), tools.wikipedia(), tools.tavily()]
-
-    agent = create_react_agent(model, tool_list, prompt=prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=tool_list, handle_parsing_errors=True, verbose=verbose)
-
-    res = agent_executor.stream({"input": query})
-    for i in res:
+def main():
+    load_dotenv()
+    args = parse_args()
+    model = create_model(args.model)
+    for i in agent(model, verbose=args.verbose).stream({"input": args.query}):
         print(i["messages"][-1].content, end="\n\n")
 
 
 if __name__ == "__main__":
     load_dotenv()
-    args = parse_args()
-    main(args.query, args.model, verbose=args.verbose)
+    main()
