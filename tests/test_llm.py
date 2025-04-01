@@ -7,20 +7,20 @@ def test_default_model():
 
 
 def test_deepseek():
-    model = create_model("deepseek-r1")
+    model = create_model("deepseek")
     assert model.invoke("test") is not None
 
 
 def test_llama():
-    model = create_model("llama3")
+    model = create_model("llama")
     assert model.invoke("test") is not None
 
 
 def test_gpt_4o_mini():
-    model = create_model("gpt-4o-mini")
+    model = create_model("4o-mini")
     assert model.invoke("test") is not None
 
 
 def test_gpt_o3_mini():
-    model = create_model("gpt-o3-mini")
+    model = create_model("o3-mini")
     assert model.invoke("test") is not None
