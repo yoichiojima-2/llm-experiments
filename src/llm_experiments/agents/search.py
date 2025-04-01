@@ -16,7 +16,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def researcher(query: str, model_opt: str, verbose=False) -> None:
+def main(query: str, model_opt: str, verbose=False) -> None:
     model = create_model(model_opt)
     prompt = prompts.multipurpose()
 
@@ -33,4 +33,4 @@ def researcher(query: str, model_opt: str, verbose=False) -> None:
 if __name__ == "__main__":
     load_dotenv()
     args = parse_args()
-    researcher(args.query, args.model, verbose=args.verbose)
+    main(args.query, args.model, verbose=args.verbose)
