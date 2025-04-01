@@ -6,12 +6,11 @@ from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain_community.tools import DuckDuckGoSearchRun, ShellTool, WikipediaQueryRun
 from langchain_community.utilities import GoogleSerperAPIWrapper, WikipediaAPIWrapper
 from langchain_community.utilities.sql_database import SQLDatabase
-from langchain_core.tools import Tool
+from langchain_core.tools import tool
 from langchain_experimental.utilities import PythonREPL
 from langchain_tavily import TavilySearch
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
-from langchain_core.tools import tool
 
 
 def duckduckgo():
@@ -27,12 +26,15 @@ async def browser_tools(playwright):
     return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
 
 
-@tool
-def python_repl(script: str) -> str:
-    """
-    python repl environment
-    """
-    return PythonREPL().run(script)
+def python_repl() -> str:
+    @tool
+    def python_repl_tool(script):
+        """
+        python repr run
+        """
+        return PythonREPL().run(script)
+
+    return python_repl_tool
 
 
 def wikipedia():
@@ -43,13 +45,15 @@ def file_management_tools():
     return FileManagementToolkit().get_tools()
 
 
-@tool
-def serper(query: str) -> str:
-    """
-    serper search
-    """
-    return GoogleSerperAPIWrapper().run(query)
+def serper():
+    @tool
+    def serper_tool(query) -> str:
+        """
+        serper search
+        """
+        return GoogleSerperAPIWrapper().run(query)
 
+    return serper_tool
 
 
 def tavily():
