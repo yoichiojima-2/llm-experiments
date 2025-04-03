@@ -1,49 +1,37 @@
 from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, create_react_agent
-from langchain_core.messages import BaseMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 
 from llm_experiments import prompts, tools
-from llm_experiments.agents.utils import parse_args
+from llm_experiments.agents.utils import get_last_message, parse_args, stream_graph_updates
 from llm_experiments.llm import create_model
 
 
-def agent(model, verbose=False) -> None:
+def create_agent(model, verbose=False) -> None:
     prompt = prompts.multipurpose()
-    tool_list = [
-        tools.duckduckgo(),
-        tools.tavily(),
-        tools.serper(),
-        # tools.wikipedia(),
-    ]
+    tool_list = [tools.shell()]
     agent = create_react_agent(model, tool_list, prompt=prompt)
     return AgentExecutor(agent=agent, tools=tool_list, handle_parsing_errors=True, verbose=verbose)
 
 
-def get_last_message(state: MessagesState) -> BaseMessage:
-    return state["messages"][-1]
-
-
-def get_search_node(model, verbose):
-    def search_node(state: MessagesState):
-        res = agent(model, verbose=verbose).invoke({"input": get_last_message(state)})
+def create_agent_node(agent):
+    def node(state: MessagesState):
+        res = agent.invoke({"input": get_last_message(state)})
         return {"messages": [res["output"]]}
 
-    return search_node
+    return node
 
 
 def create_graph(model, verbose):
     graph = StateGraph(MessagesState)
-    graph.add_node("agent", get_search_node(model, verbose))
+
+    agent = create_agent(model, verbose=verbose)
+    graph.add_node("agent", create_agent_node(agent))
+
     graph.add_edge(START, "agent")
     graph.add_edge("agent", END)
     return graph.compile(checkpointer=MemorySaver())
-
-
-def stream_graph_updates(graph, user_input, config):
-    for i in graph.stream({"messages": [user_input]}, config=config, stream_mode="updates"):
-        print(f"agent: {i.get('agent').get('messages')[-1]}\n")
 
 
 def main():
