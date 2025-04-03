@@ -60,7 +60,7 @@ def tavily():
     return TavilySearch(max_results=5)
 
 
-def sql(model, db_name):
+def sql_tools(model, db_name):
     db_dir = Path(__file__).parent.parent.parent / "db"
     path = db_dir / f"{db_name}.db"
     path.parent.mkdir(parents=True, exist_ok=True)
