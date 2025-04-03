@@ -4,7 +4,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 
 from llm_experiments import prompts, tools
-from llm_experiments.agents.utils import get_last_message, parse_args, stream_graph_updates
+from llm_experiments.agents.utils import create_agent_node, parse_args, stream_graph_updates
 from llm_experiments.llm import create_model
 
 
@@ -15,20 +15,10 @@ def create_agent(model, verbose=False) -> None:
     return AgentExecutor(agent=agent, tools=tool_list, handle_parsing_errors=True, verbose=verbose)
 
 
-def create_agent_node(agent):
-    def node(state: MessagesState):
-        res = agent.invoke({"input": get_last_message(state)})
-        return {"messages": [res["output"]]}
-
-    return node
-
-
 def create_graph(model, verbose):
-    graph = StateGraph(MessagesState)
-
     agent = create_agent(model, verbose=verbose)
+    graph = StateGraph(MessagesState)
     graph.add_node("agent", create_agent_node(agent))
-
     graph.add_edge(START, "agent")
     graph.add_edge("agent", END)
     return graph.compile(checkpointer=MemorySaver())
