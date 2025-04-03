@@ -27,3 +27,4 @@ def get_last_message(state: MessagesState) -> BaseMessage:
 def stream_graph_updates(graph, user_input, config):
     for i in graph.stream({"messages": [user_input]}, config=config, stream_mode="messages"):
         print(i[0].content, end="")
+    print("\n\n")
