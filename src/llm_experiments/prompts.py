@@ -40,5 +40,11 @@ def create_complete_prompt_template(query):
     )
 
 
+def superagent():
+    prompt = "Create a sequential workflow based on the users query"
+    return create_complete_prompt_template(prompt)
+
+
 def multipurpose():
-    return create_complete_prompt_template("Answer the following questions as best you can.")
+    prompt = "Answer the following questions as best you can."
+    return create_complete_prompt_template(prompt)

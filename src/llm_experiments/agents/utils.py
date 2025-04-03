@@ -12,7 +12,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def create_agent_node(agent):
+def create_node(agent):
     def node(state: MessagesState):
         res = agent.invoke({"input": get_last_message(state)})
         return {"messages": [res["output"]]}
