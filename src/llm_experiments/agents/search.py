@@ -35,15 +35,15 @@ def get_search_node(model, verbose):
 
 def create_graph(model, verbose):
     graph = StateGraph(MessagesState)
-    graph.add_node("search", get_search_node(model, verbose))
-    graph.add_edge(START, "search")
-    graph.add_edge("search", END)
+    graph.add_node("agent", get_search_node(model, verbose))
+    graph.add_edge(START, "agent")
+    graph.add_edge("agent", END)
     return graph.compile(checkpointer=MemorySaver())
 
 
 def stream_graph_updates(graph, user_input, config):
-    for i in graph.stream({"messages": user_input}, config=config, stream_mode="updates"):
-        print(f"agent: {i.get('search').get('messages')[-1]}")
+    for i in graph.stream({"messages": [user_input]}, config=config, stream_mode="updates"):
+        print(f"agent: {i.get('agent').get('messages')[-1]}\n")
 
 
 def main():
