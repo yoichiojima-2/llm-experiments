@@ -39,12 +39,19 @@ def create_complete_prompt_template(query):
         )
     )
 
-
+# fixme
 def superagent():
-    prompt = "Create a sequential workflow based on the users query"
-    return create_complete_prompt_template(prompt)
-
+    return PromptTemplate.from_template(
+        textwrap.dedent(
+            """
+            Decide what to do next based on the following question and the tools you have access to.
+            tools: {tools}
+            agent_scratchpad: {agent_scratchpad}
+            tool_names: {tool_names}
+            """
+        )
+    )
 
 def multipurpose():
-    prompt = "Answer the following questions as best you can."
+    prompt = "Answer the following questions as best you can"
     return create_complete_prompt_template(prompt)
