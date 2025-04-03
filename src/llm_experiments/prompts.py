@@ -3,12 +3,10 @@ import textwrap
 from langchain_core.prompts import PromptTemplate
 
 
-def multipurpose():
-    return PromptTemplate.from_template(
-        textwrap.dedent(
-            """
-        Answer the following questions as best you can. You have access to the following tools:
-
+def common_task_instruction():
+    return textwrap.dedent(
+        """
+        You have access to the following tools:
         {tools}
 
         Use the following format:
@@ -27,5 +25,19 @@ def multipurpose():
         Question: {input}
         Thought:{agent_scratchpad}
         """
+    )
+
+def create_complete_prompt_template(query):
+    return PromptTemplate.from_template(
+        textwrap.dedent(
+            f"""
+            {query}
+
+            {common_task_instruction()}
+            """
         )
     )
+
+
+def multipurpose():
+    return create_complete_prompt_template("Answer the following questions as best you can.")
