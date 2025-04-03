@@ -43,7 +43,7 @@ def create_graph(model, verbose):
 
 def stream_graph_updates(graph, user_input, config):
     for i in graph.stream({"messages": user_input}, config=config, stream_mode="updates"):
-        print(f"agent: {i.get("search").get("messages")[-1]}")
+        print(f"agent: {i.get('search').get('messages')[-1]}")
 
 
 def main():
@@ -54,7 +54,8 @@ def main():
     config = {"configurable": {"thread_id": "search"}}
     while True:
         user_input = input("user: ")
-        if user_input == "q": break
+        if user_input == "q":
+            break
         stream_graph_updates(graph, user_input, config)
 
 

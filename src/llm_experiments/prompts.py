@@ -27,6 +27,7 @@ def common_task_instruction():
         """
     )
 
+
 def create_complete_prompt_template(query):
     return PromptTemplate.from_template(
         textwrap.dedent(
