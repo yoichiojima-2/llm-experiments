@@ -8,12 +8,7 @@ from llm_experiments.llm import create_model
 
 def agent(model, verbose=False) -> None:
     prompt = prompts.multipurpose()
-    tool_list = [
-        tools.duckduckgo(),
-        tools.tavily(),
-        tools.serper(),
-        tools.wikipedia(),
-    ]
+    tool_list = [tools.serper()]
     agent = create_react_agent(model, tool_list, prompt=prompt)
     return AgentExecutor(agent=agent, tools=tool_list, handle_parsing_errors=True, verbose=verbose)
 
