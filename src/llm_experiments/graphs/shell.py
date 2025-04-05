@@ -7,7 +7,7 @@ from llm_experiments import prompts, tools
 from llm_experiments.graphs.utils import create_node, create_super_node, parse_args, stream_graph_updates
 from llm_experiments.llm import create_model
 
-TOOLS = [tools.duckduckgo(), tools.tavily(), tools.serper()]
+TOOLS = [tools.shell()]
 
 
 def create_agent(model, verbose=False) -> None:
