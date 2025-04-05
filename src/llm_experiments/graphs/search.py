@@ -19,8 +19,7 @@ def create_agent(model, verbose=False) -> None:
 def create_graph(model, verbose):
     graph = StateGraph(MessagesState)
     agent = create_agent(model, verbose=verbose)
-    supernode = create_super_node(model, TOOLS)
-    graph.add_node("superagent", supernode)
+    graph.add_node("superagent", create_super_node(model, TOOLS))
     graph.add_node("agent", create_node(agent))
     graph.add_edge(START, "superagent")
     graph.add_edge("superagent", "agent")
