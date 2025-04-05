@@ -22,7 +22,6 @@ def create_graph(model, verbose):
     graph.add_node("superagent", create_super_node(model, TOOLS))
     graph.add_node("agent", create_node(agent))
     graph.add_edge(START, "superagent")
-    graph.add_edge("superagent", "agent")
     return graph.compile(checkpointer=MemorySaver())
 
 
