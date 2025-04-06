@@ -4,7 +4,6 @@ from pathlib import Path
 from langchain_community.agent_toolkits import FileManagementToolkit, PlayWrightBrowserToolkit
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain_community.tools import DuckDuckGoSearchRun, ShellTool, WikipediaQueryRun
-from langchain_community.tools.asknews import AskNewsSearch
 from langchain_community.utilities import GoogleSerperAPIWrapper, WikipediaAPIWrapper
 from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_core.tools import tool
@@ -22,8 +21,10 @@ def shell(*a, **kw):
     return ShellTool(*a, **kw)
 
 
-async def browser_tools(playwright):
-    browser = await playwright.chromium.launch(headless=False)
+async def browser_tools(browser):
+    import nest_asyncio
+
+    nest_asyncio.apply()
     return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
 
 

@@ -1,7 +1,6 @@
 import textwrap
 from typing import Callable, Literal
 
-from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import SystemMessage
@@ -16,15 +15,23 @@ from llm_experiments import prompts
 NodeType = Callable[[MessagesState], Command]
 
 
+def create_executor(model, tools, verbose) -> AgentExecutor:
+    prompt = prompts.multipurpose()
+    agent = create_react_agent(model, tools, prompt=prompt)
+    return AgentExecutor(agent=agent, tools=tools, handle_parsing_errors=True, verbose=verbose)
+
+
 class Agent:
     def __init__(
         self,
+        executor: AgentExecutor,
         model: BaseChatModel,
         memory: BaseCheckpointSaver,
         tools: list[BaseTool],
         verbose: bool = False,
         config: dict[dict[str, str]] = {"configurable": {"thread_id": "default"}},
     ):
+        self.executor = executor
         self.model = model
         self.memory = memory
         self.verbose = verbose
@@ -39,12 +46,6 @@ class Agent:
         g.add_edge(START, "superagent")
         g.add_edge("superagent", "agent")
         return g.compile(checkpointer=self.memory)
-
-    @property
-    def executor(self) -> AgentExecutor:
-        prompt = prompts.multipurpose()
-        agent = create_react_agent(self.model, self.tools, prompt=prompt)
-        return AgentExecutor(agent=agent, tools=self.tools, handle_parsing_errors=True, verbose=self.verbose)
 
     def create_super_node(self) -> NodeType:
         def superagent(state: MessagesState) -> Command[Literal["agent", "__end__"]]:
@@ -84,7 +85,6 @@ class Agent:
         print("\n\n")
 
     async def interactive_chat(self) -> None:
-        load_dotenv()
         while True:
             user_input = input("user: ")
             if user_input == "q":
