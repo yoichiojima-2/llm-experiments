@@ -112,7 +112,6 @@ async def sql(model, memory, verbose, config):
     await interactive_chat(agent)
 
 
-
 def parse_args():
     parser = ArgumentParser()
     opt = parser.add_argument
