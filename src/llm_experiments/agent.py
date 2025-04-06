@@ -46,7 +46,7 @@ class Agent:
         memory: BaseCheckpointSaver,
         tools: list[BaseTool],
         verbose: bool = False,
-        config: dict[dict[str, str]] = {"configurable": {"thread_id": "default"}},
+        config: dict[str, dict[str, str]] = {"configurable": {"thread_id": "default"}},
     ):
         self.executor = executor
         self.model = model
