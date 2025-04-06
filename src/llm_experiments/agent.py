@@ -21,6 +21,22 @@ def create_executor(model, tools, verbose) -> AgentExecutor:
     return AgentExecutor(agent=agent, tools=tools, handle_parsing_errors=True, verbose=verbose)
 
 
+async def interactive_chat(agent: CompiledGraph) -> None:
+    while True:
+        user_input = input("user: ")
+        if user_input == "q":
+            print("quitting...")
+            return
+        await astream_messages(user_input, agent)
+
+
+async def astream_messages(user_input: str, agent: CompiledGraph) -> None:
+    print()
+    async for i in agent.graph.astream({"messages": [user_input]}, config=agent.config, stream_mode="messages"):
+        print(i[0].content, end="")
+    print("\n\n")
+
+
 class Agent:
     def __init__(
         self,
@@ -77,17 +93,3 @@ class Agent:
             return {"messages": [res["output"]]}
 
         return node
-
-    async def astream_messages(self, user_input: str) -> None:
-        print()
-        async for i in self.graph.astream({"messages": [user_input]}, config=self.config, stream_mode="messages"):
-            print(i[0].content, end="")
-        print("\n\n")
-
-    async def interactive_chat(self) -> None:
-        while True:
-            user_input = input("user: ")
-            if user_input == "q":
-                print("quitting...")
-                return
-            await self.astream_messages(user_input)

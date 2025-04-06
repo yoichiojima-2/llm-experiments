@@ -7,8 +7,23 @@ from langchain_community.tools.playwright.utils import create_async_playwright_b
 from langgraph.checkpoint.memory import MemorySaver
 
 from llm_experiments import tools
-from llm_experiments.agent import Agent, create_executor
+from llm_experiments.agent import Agent, create_executor, interactive_chat
 from llm_experiments.llm import create_model
+
+
+async def chat(model, memory, verbose, config):
+    model = create_model(model)
+    toolkit = [tools.tavily(), tools.duckduckgo(), tools.serper()]
+    executor = create_executor(model, toolkit, verbose)
+    agent = Agent(
+        executor=executor,
+        model=model,
+        memory=memory,
+        tools=toolkit,
+        verbose=verbose,
+        config=config,
+    )
+    await interactive_chat(agent)
 
 
 async def search(model, memory, verbose, config):
@@ -23,7 +38,7 @@ async def search(model, memory, verbose, config):
         verbose=verbose,
         config=config,
     )
-    await agent.interactive_chat()
+    await interactive_chat(agent)
 
 
 async def shell_w_search(model, memory, verbose, config):
@@ -38,7 +53,7 @@ async def shell_w_search(model, memory, verbose, config):
         verbose=verbose,
         config=config,
     )
-    await agent.interactive_chat()
+    await interactive_chat(agent)
 
 
 async def shell(model, memory, verbose, config):
@@ -53,7 +68,7 @@ async def shell(model, memory, verbose, config):
         verbose=verbose,
         config=config,
     )
-    await agent.interactive_chat()
+    await interactive_chat(agent)
 
 
 # fixme
@@ -79,7 +94,7 @@ async def browser(model, memory, verbose, config):
             verbose=verbose,
             config=config,
         )
-        await agent.interactive_chat()
+        await interactive_chat(agent)
 
 
 def parse_args():
