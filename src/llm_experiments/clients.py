@@ -26,7 +26,7 @@ async def search(model, memory, verbose, config):
     await agent.interactive_chat()
 
 
-async def shell_w_web(model, memory, verbose, config):
+async def shell_w_search(model, memory, verbose, config):
     model = create_model(model)
     toolkit = [tools.shell(ask_human_input=True), tools.tavily(), tools.duckduckgo(), tools.serper()]
     executor = create_executor(model, toolkit, verbose)
@@ -85,7 +85,7 @@ async def browser(model, memory, verbose, config):
 def parse_args():
     parser = ArgumentParser()
     opt = parser.add_argument
-    opt("--agent", "-a", choices=["search", "shell", "browser", "shell_w_web"], default="search")
+    opt("--agent", "-a", choices=["search", "shell", "browser", "shell_w_search"], default="search")
     opt("--model", "-m", type=str, default="4o-mini")
     opt("--verbose", "-v", action="store_true", default=False)
     return parser.parse_args()
@@ -103,8 +103,8 @@ async def main():
             await shell(model=args.model, memory=memory, verbose=args.verbose, config=config)
         case "browser":
             await browser(model=args.model, memory=memory, verbose=args.verbose, config=config)
-        case "shell_w_web":
-            await shell_w_web(model=args.model, memory=memory, verbose=args.verbose, config=config)
+        case "shell_w_search":
+            await shell_w_search(model=args.model, memory=memory, verbose=args.verbose, config=config)
         case _:
             raise ValueError(f"Unknown agent: {args.agent}")
 

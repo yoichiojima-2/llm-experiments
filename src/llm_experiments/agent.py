@@ -51,7 +51,7 @@ class Agent:
         def superagent(state: MessagesState) -> Command[Literal["agent", "__end__"]]:
             system_prompt = textwrap.dedent(
                 f"""
-                Answer the following questions as best you can
+                Answer the following questions as best you can.
                 You have access to the following tools:
                 {self.tools}
                 """
