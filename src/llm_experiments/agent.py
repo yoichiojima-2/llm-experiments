@@ -1,5 +1,4 @@
 import textwrap
-from pydantic import BaseModel, Field
 from typing import Callable, Literal
 
 from langchain.agents import AgentExecutor, create_react_agent

@@ -2,7 +2,6 @@ import asyncio
 from argparse import ArgumentParser, Namespace
 
 from dotenv import load_dotenv
-from langchain.agents import AgentType, initialize_agent
 from langchain_community.tools.playwright.utils import create_async_playwright_browser
 from langchain_core.language_models.chat_models import BaseChatModel
 from langgraph.checkpoint.memory import BaseCheckpointSaver, MemorySaver
@@ -22,8 +21,7 @@ class Config:
         self.verbose = verbose
 
 
-async def search(config: Config) -> None:
-    toolkit = [tools.tavily(), tools.duckduckgo(), tools.serper(), tools.wikipedia()]
+async def interactive_chat_from_tools(toolkit, config: Config):
     executor = create_executor(config.model, toolkit, config.verbose)
     agent = Agent(
         executor=executor,
@@ -34,73 +32,37 @@ async def search(config: Config) -> None:
         config=config.configurable,
     )
     await interactive_chat(agent)
+
+
+async def search(config: Config) -> None:
+    toolkit = [tools.tavily(), tools.duckduckgo(), tools.serper(), tools.wikipedia()]
+    await interactive_chat_from_tools(toolkit, config)
 
 
 async def shell_w_search(config: Config) -> None:
     toolkit = [tools.shell(ask_human_input=True), tools.tavily(), tools.duckduckgo(), tools.serper()]
-    executor = create_executor(config.model, toolkit, config.verbose)
-    agent = Agent(
-        executor=executor,
-        model=config.model,
-        memory=config.memory,
-        tools=toolkit,
-        verbose=config.verbose,
-        config=config.configurable,
-    )
-    await interactive_chat(agent)
+    await interactive_chat_from_tools(toolkit, config)
 
 
 async def shell(config: Config) -> None:
     toolkit = [tools.shell(ask_human_input=True)]
-    executor = create_executor(config.model, toolkit, config.verbose)
-    agent = Agent(
-        executor=executor,
-        model=config.model,
-        memory=config.memory,
-        tools=toolkit,
-        verbose=config.verbose,
-        config=config.configurable,
-    )
-    await interactive_chat(agent)
+    await interactive_chat_from_tools(toolkit, config)
 
 
 # fixme
-async def browser(model, memory, verbose, config) -> None:
+async def browser(config: Config) -> None:
     import nest_asyncio
 
     nest_asyncio.apply()
 
     async with create_async_playwright_browser(headless=False) as async_browser:
         toolkit = await tools.browser_tools(async_browser)
-        executor = initialize_agent(
-            toolkit,
-            model,
-            agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-        )
-        agent = Agent(
-            executor=executor,
-            model=model,
-            memory=memory,
-            tools=toolkit,
-            verbose=verbose,
-            config=config,
-        )
-        await interactive_chat(agent)
+        await interactive_chat_from_tools(toolkit, config)
 
 
 async def sql(config: Config) -> None:
     toolkit = [*tools.sql_tools(config.model, "sql"), tools.shell(), tools.duckduckgo()]
-    executor = create_executor(config.model, toolkit, config.verbose)
-    agent = Agent(
-        executor=executor,
-        model=config.model,
-        memory=config.memory,
-        tools=toolkit,
-        verbose=config.verbose,
-        config=config,
-    )
-    await interactive_chat(agent)
+    await interactive_chat_from_tools(toolkit, config)
 
 
 def parse_args() -> Namespace:
