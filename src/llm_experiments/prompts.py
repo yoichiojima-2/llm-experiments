@@ -3,7 +3,7 @@ import textwrap
 from langchain_core.prompts import PromptTemplate
 
 
-def common_task_instruction():
+def common_task_instruction() -> str:
     return textwrap.dedent(
         """
         You have access to the following tools:
@@ -28,7 +28,7 @@ def common_task_instruction():
     )
 
 
-def create_complete_prompt_template(query):
+def create_complete_prompt_template(query) -> PromptTemplate:
     return PromptTemplate.from_template(
         textwrap.dedent(
             f"""
@@ -39,6 +39,6 @@ def create_complete_prompt_template(query):
     )
 
 
-def multipurpose():
+def multipurpose() -> PromptTemplate:
     prompt = "Answer the following questions as best you can"
     return create_complete_prompt_template(prompt)
