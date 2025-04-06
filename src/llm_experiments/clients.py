@@ -5,6 +5,11 @@ from llm_experiments.agent import Agent
 from llm_experiments.llm import create_model
 
 
+def search(model, verbose, config):
+    agent = Agent(create_model(model), [tools.tavily(), tools.duckduckgo(), tools.serper()], verbose=verbose, config=config)
+    agent.interactive_chat()
+
+
 def parse_args():
     parser = ArgumentParser()
     opt = parser.add_argument
@@ -12,11 +17,6 @@ def parse_args():
     opt("--model", "-m", type=str, default="4o-mini")
     opt("--verbose", "-v", action="store_true", default=False)
     return parser.parse_args()
-
-
-def search(model, verbose, config):
-    agent = Agent(create_model(model), [tools.tavily(), tools.duckduckgo(), tools.serper()], verbose=verbose, config=config)
-    agent.interactive_chat()
 
 
 def main():
