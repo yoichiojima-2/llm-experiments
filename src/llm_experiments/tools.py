@@ -22,18 +22,13 @@ def shell(*a, **kw):
 
 
 async def browser_tools(browser):
-    import nest_asyncio
-
-    nest_asyncio.apply()
     return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
 
 
 def python_repl() -> str:
     @tool
     def python_repl_tool(script):
-        """
-        python repr run
-        """
+        """python repr run"""
         return PythonREPL().run(script)
 
     return python_repl_tool
@@ -50,9 +45,7 @@ def file_management_tools():
 def serper():
     @tool
     def serper_tool(query) -> str:
-        """
-        serper search
-        """
+        """serper search"""
         return GoogleSerperAPIWrapper().run(query)
 
     return serper_tool
