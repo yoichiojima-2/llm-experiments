@@ -97,10 +97,26 @@ async def browser(model, memory, verbose, config):
         await interactive_chat(agent)
 
 
+async def sql(model, memory, verbose, config):
+    model = create_model(model)
+    toolkit = [*tools.sql_tools(model, "sql"), tools.shell(), tools.duckduckgo()]
+    executor = create_executor(model, toolkit, verbose)
+    agent = Agent(
+        executor=executor,
+        model=model,
+        memory=memory,
+        tools=toolkit,
+        verbose=verbose,
+        config=config,
+    )
+    await interactive_chat(agent)
+
+
+
 def parse_args():
     parser = ArgumentParser()
     opt = parser.add_argument
-    opt("--agent", "-a", choices=["search", "shell", "browser", "shell_w_search"], default="search")
+    opt("--agent", "-a", choices=["search", "shell", "browser", "shell_w_search", "sql"], default="search")
     opt("--model", "-m", type=str, default="4o-mini")
     opt("--verbose", "-v", action="store_true", default=False)
     return parser.parse_args()
@@ -120,6 +136,8 @@ async def main():
             await browser(model=args.model, memory=memory, verbose=args.verbose, config=config)
         case "shell_w_search":
             await shell_w_search(model=args.model, memory=memory, verbose=args.verbose, config=config)
+        case "sql":
+            await sql(model=args.model, memory=memory, verbose=args.verbose, config=config)
         case _:
             raise ValueError(f"Unknown agent: {args.agent}")
 
