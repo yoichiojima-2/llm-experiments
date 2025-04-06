@@ -6,7 +6,7 @@ from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import SystemMessage
 from langchain_core.tools.base import BaseTool
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.memory import BaseCheckpointSaver
 from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.types import Command
 
@@ -17,11 +17,13 @@ class Agent:
     def __init__(
         self,
         model: BaseChatModel,
+        memory: BaseCheckpointSaver,
         tools: list[BaseTool],
         verbose: bool = False,
         config: dict[dict[str, str]] = {"configurable": {"thread_id": "default"}},
     ):
         self.model = model
+        self.memory = memory
         self.verbose = verbose
         self.tools = tools
         self.config = config
@@ -33,7 +35,7 @@ class Agent:
         g.add_node("agent", self.create_node())
         g.add_edge(START, "superagent")
         g.add_edge("superagent", "agent")
-        return g.compile(checkpointer=MemorySaver())
+        return g.compile(checkpointer=self.memory)
 
     @property
     def executor(self) -> AgentExecutor:
