@@ -138,7 +138,7 @@ async def main():
         case "sql":
             await sql(model=args.model, memory=memory, verbose=args.verbose, config=config)
         case _:
-            raise ValueError(f"Unknown agent: {args.agent}")
+            raise ValueError(f"unknown agent: {args.agent}")
 
 
 if __name__ == "__main__":
