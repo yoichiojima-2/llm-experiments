@@ -74,10 +74,8 @@ class Agent:
                 If you don't need agent with tools, send to agent_w_no_tool.
                 """
             )
-
             msgs = [SystemMessage(content=system_prompt), *state["messages"]]
             res = self.model.bind_tools(self.tools).invoke(msgs)
-
             if len(res.tool_calls) > 0:
                 tool_call_id = res.tool_calls[-1]["id"]
                 tool_msg = {
@@ -88,12 +86,10 @@ class Agent:
                 return Command(goto="agent", update={"messages": [res, tool_msg]})
             else:
                 return Command(goto="__end__", update={"messages": [res]})
-
         return superagent
 
     def create_node(self) -> NodeType:
         def node(state: MessagesState):
             res = self.executor.invoke({"input": state["messages"]})
             return {"messages": [res["output"]]}
-
         return node
