@@ -1,4 +1,5 @@
 import textwrap
+from pydantic import BaseModel, Field
 from typing import Callable, Literal
 
 from langchain.agents import AgentExecutor, create_react_agent
@@ -59,17 +60,20 @@ class Agent:
         g = StateGraph(MessagesState)
         g.add_node("superagent", self.create_super_node())
         g.add_node("agent", self.create_node())
+        g.add_node("agent_w_no_tool", self.node_w_no_tool())
         g.add_edge(START, "superagent")
         g.add_edge("superagent", "agent")
+        g.add_edge("agent", "agent_w_no_tool")
         return g.compile(checkpointer=self.memory)
 
     def create_super_node(self) -> NodeType:
-        def superagent(state: MessagesState) -> Command[Literal["agent", "__end__"]]:
+        def superagent(state: MessagesState) -> Command[Literal["agent", "agent_w_no_tool", "__end__"]]:
             system_prompt = textwrap.dedent(
                 f"""
                 Answer the following questions as best you can.
                 You have access to the following tools:
                 {self.tools}
+                If you don't need agent with tools, send to agent_w_no_tool.
                 """
             )
 
@@ -91,5 +95,16 @@ class Agent:
         def node(state: MessagesState):
             res = self.executor.invoke({"input": state["messages"]})
             return {"messages": [res["output"]]}
+
+        return node
+
+    def node_w_no_tool(self) -> NodeType:
+        class Output(BaseModel):
+            input: str = Field(desc="Input to the agent")
+            output: str = Field(desc="Output of the agent")
+
+        def node(state: MessagesState):
+            res = self.model.with_structured_output(Output).invoke(state["messages"])
+            return {"messages": [res.output]}
 
         return node
