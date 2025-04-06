@@ -8,9 +8,12 @@ from langchain_core.messages import SystemMessage
 from langchain_core.tools.base import BaseTool
 from langgraph.checkpoint.memory import BaseCheckpointSaver
 from langgraph.graph import START, MessagesState, StateGraph
+from langgraph.graph.graph import CompiledGraph
 from langgraph.types import Command
 
 from llm_experiments import prompts
+
+NodeType = Callable[[MessagesState], Command]
 
 
 class Agent:
@@ -27,9 +30,9 @@ class Agent:
         self.verbose = verbose
         self.tools = tools
         self.config = config
+        self.graph = self.compile_graph()
 
-    @property
-    def graph(self):
+    def compile_graph(self) -> CompiledGraph:
         g = StateGraph(MessagesState)
         g.add_node("superagent", self.create_super_node())
         g.add_node("agent", self.create_node())
@@ -43,7 +46,7 @@ class Agent:
         agent = create_react_agent(self.model, self.tools, prompt=prompt)
         return AgentExecutor(agent=agent, tools=self.tools, handle_parsing_errors=True, verbose=self.verbose)
 
-    def create_super_node(self) -> Callable[[MessagesState], Command]:
+    def create_super_node(self) -> NodeType:
         def superagent(state: MessagesState) -> Command[Literal["agent", "__end__"]]:
             system_prompt = textwrap.dedent(
                 f"""
@@ -67,24 +70,24 @@ class Agent:
 
         return superagent
 
-    def create_node(self):
+    def create_node(self) -> NodeType:
         def node(state: MessagesState):
             res = self.executor.invoke({"input": state["messages"]})
             return {"messages": [res["output"]]}
 
         return node
 
-    def stream_messages(self, user_input: str):
+    async def astream_messages(self, user_input: str) -> None:
         print()
-        for i in self.graph.stream({"messages": [user_input]}, config=self.config, stream_mode="messages"):
+        async for i in self.graph.astream({"messages": [user_input]}, config=self.config, stream_mode="messages"):
             print(i[0].content, end="")
         print("\n\n")
 
-    def interactive_chat(self) -> None:
+    async def interactive_chat(self) -> None:
         load_dotenv()
         while True:
             user_input = input("user: ")
             if user_input == "q":
                 print("quitting...")
                 return
-            self.stream_messages(user_input)
+            await self.astream_messages(user_input)

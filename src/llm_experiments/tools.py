@@ -4,6 +4,7 @@ from pathlib import Path
 from langchain_community.agent_toolkits import FileManagementToolkit, PlayWrightBrowserToolkit
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain_community.tools import DuckDuckGoSearchRun, ShellTool, WikipediaQueryRun
+from langchain_community.tools.asknews import AskNewsSearch
 from langchain_community.utilities import GoogleSerperAPIWrapper, WikipediaAPIWrapper
 from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_core.tools import tool
@@ -17,8 +18,8 @@ def duckduckgo():
     return DuckDuckGoSearchRun()
 
 
-def shell():
-    return ShellTool()
+def shell(*a, **kw):
+    return ShellTool(*a, **kw)
 
 
 async def browser_tools(playwright):
