@@ -87,7 +87,8 @@ async def interactive_chat(agent: CompiledGraph) -> None:
         print(f"error: {e}", file=sys.stderr)
 
 
-async def interactive_chat_from_tools(tools, prompt, config):
+async def interactive_chat_from_tools(tools, config):
+    prompt = prompts.multipurpose()
     executor = create_executor(model=config.model, tools=tools, verbose=config.verbose, prompt=prompt)
     agent = Agent(
         executor=executor,
@@ -102,32 +103,33 @@ async def interactive_chat_from_tools(tools, prompt, config):
 
 async def search(config: Config) -> None:
     toolkit = [tools.tavily(), tools.duckduckgo(), tools.serper(), tools.wikipedia()]
-    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
+    await interactive_chat_from_tools(tools=toolkit, config=config)
 
 
 async def shell_w_search(config: Config) -> None:
     toolkit = [tools.shell(ask_human_input=True), tools.tavily(), tools.duckduckgo(), tools.serper()]
-    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
+    await interactive_chat_from_tools(tools=toolkit, config=config)
 
 
 async def shell(config: Config) -> None:
     toolkit = [tools.shell(ask_human_input=True)]
-    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
+    await interactive_chat_from_tools(tools=toolkit, config=config)
 
 
+# fixme
 async def slack(config: Config) -> None:
     toolkit = [*tools.slack_tools()]
-    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
+    await interactive_chat_from_tools(tools=toolkit, config=config)
 
 
 async def python_repl(config: Config) -> None:
     toolkit = [tools.python_repl()]
-    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
+    await interactive_chat_from_tools(tools=toolkit, config=config)
 
 
 async def sql(config: Config) -> None:
     toolkit = [*tools.sql_tools(config.model, "sql"), tools.shell(), tools.duckduckgo()]
-    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
+    await interactive_chat_from_tools(tools=toolkit, config=config)
 
 
 # fixme
@@ -138,7 +140,7 @@ async def browser(config: Config) -> None:
 
     async with create_async_playwright_browser(headless=False) as async_browser:
         toolkit = await tools.browser_tools(async_browser)
-        await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
+        await interactive_chat_from_tools(tools=toolkit, config=config)
 
 
 if __name__ == "__main__":

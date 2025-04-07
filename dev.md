@@ -1,0 +1,2 @@
+- use should_countinue way `https://langchain-ai.github.io/langgraph/how-tos/tool-calling/#define-tools`
+- ToolNode?
