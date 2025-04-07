@@ -13,6 +13,7 @@ clean:
 	find . -name .cache -type f -exec rm {} +
 	find . -name uv.lock -type f -exec rm {} +
 	find . -name "*.egg-info" -type d -exec rm -rf {} +
+	deactivate
 
 lint:
 	uv run isort .

@@ -66,9 +66,8 @@ class Config:
         self.verbose = verbose
 
 
-def create_executor(model, tools, verbose) -> AgentExecutor:
-    prompt = prompts.multipurpose()
-    agent = create_react_agent(model, tools, prompt=prompt)
+def create_executor(model, tools, verbose, prompt) -> AgentExecutor:
+    agent = create_react_agent(llm=model, tools=tools, prompt=prompt)
     return AgentExecutor(agent=agent, tools=tools, handle_parsing_errors=True, verbose=verbose)
 
 
@@ -88,13 +87,13 @@ async def interactive_chat(agent: CompiledGraph) -> None:
         print(f"error: {e}", file=sys.stderr)
 
 
-async def interactive_chat_from_tools(toolkit, config: Config):
-    executor = create_executor(config.model, toolkit, config.verbose)
+async def interactive_chat_from_tools(tools, prompt, config):
+    executor = create_executor(model=config.model, tools=tools, verbose=config.verbose, prompt=prompt)
     agent = Agent(
         executor=executor,
         model=config.model,
         memory=config.memory,
-        tools=toolkit,
+        tools=tools,
         verbose=config.verbose,
         config=config.configurable,
     )
@@ -103,32 +102,32 @@ async def interactive_chat_from_tools(toolkit, config: Config):
 
 async def search(config: Config) -> None:
     toolkit = [tools.tavily(), tools.duckduckgo(), tools.serper(), tools.wikipedia()]
-    await interactive_chat_from_tools(toolkit, config)
+    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
 
 
 async def shell_w_search(config: Config) -> None:
     toolkit = [tools.shell(ask_human_input=True), tools.tavily(), tools.duckduckgo(), tools.serper()]
-    await interactive_chat_from_tools(toolkit, config)
+    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
 
 
 async def shell(config: Config) -> None:
     toolkit = [tools.shell(ask_human_input=True)]
-    await interactive_chat_from_tools(toolkit, config)
+    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
 
 
 async def slack(config: Config) -> None:
     toolkit = [*tools.slack_tools()]
-    await interactive_chat_from_tools(toolkit, config)
+    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
 
 
 async def python_repl(config: Config) -> None:
     toolkit = [tools.python_repl()]
-    await interactive_chat_from_tools(toolkit, config)
+    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
 
 
 async def sql(config: Config) -> None:
     toolkit = [*tools.sql_tools(config.model, "sql"), tools.shell(), tools.duckduckgo()]
-    await interactive_chat_from_tools(toolkit, config)
+    await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
 
 
 # fixme
@@ -139,7 +138,7 @@ async def browser(config: Config) -> None:
 
     async with create_async_playwright_browser(headless=False) as async_browser:
         toolkit = await tools.browser_tools(async_browser)
-        await interactive_chat_from_tools(toolkit, config)
+        await interactive_chat_from_tools(tools=toolkit, prompt=prompts.multipurpose(), config=config)
 
 
 if __name__ == "__main__":

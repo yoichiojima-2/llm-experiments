@@ -3,13 +3,8 @@ import sys
 from functools import wraps
 
 import slack_sdk
-from pydantic import BaseModel, Field
+from langchain_core.tools import StructuredTool, tool
 from slack_sdk.errors import SlackApiError
-
-
-class PostMessageArgs(BaseModel):
-    channel: str = Field(description="The channel to post the message to.")
-    text: str = Field(description="The message text.")
 
 
 def handle_error(func):
@@ -29,28 +24,18 @@ class SlackTools:
         self.client = slack_sdk.WebClient(token=os.getenv("SLACK_USER_TOKEN"))
 
     def get_tools(self):
-        return [
-            # self.post_message(),
-            # self.post_ephemeral,
-            # self.update_message,
-            # self.delete_message,
-            # self.add_reaction,
-            # self.remove_reaction,
-            # self.upload_file,
-            # self.add_remote_file,
-        ]
+        return [self.post_message_tool()]
 
-    @handle_error
-    def post_message(self, channel: str, text: str) -> tuple[bool, str, str]:
-        """
-        Post a message to a Slack channel.
-        Args:
-            channel (str): The channel to post the message to.
-            text (str): The message text.
-        """
-        res = self.client.chat_postMessage(channel=channel, text=text)
-        print(f"message sent to {channel}: {text}")
-        return res["ok"], res["channel"], res["ts"]
+    def post_message_tool(self) -> StructuredTool:
+        @tool
+        @handle_error
+        def post_message(channel: str, text: str) -> tuple[bool, str, str]:
+            """Post a message to a Slack channel."""
+            res = self.client.chat_postMessage(channel=channel, text=text)
+            print(f"message sent to {channel}: {text}")
+            return res["ok"], res["channel"], res["ts"]
+
+        return post_message
 
     @handle_error
     def post_ephemeral(self, channel: str, text: str, user: str) -> tuple[bool, str, str]:
