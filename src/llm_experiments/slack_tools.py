@@ -28,7 +28,7 @@ class SlackTools:
         def post(channel: str, text: str) -> tuple[bool, str, str]:
             """post a message to a Slack channel."""
             self.post_message(channel, text)
-
+        
         @tool
         def delete(channel: str, ts: str) -> tuple[bool, str, str]:
             """delete a message from a Slack channel."""
