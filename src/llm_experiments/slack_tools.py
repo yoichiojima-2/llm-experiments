@@ -3,7 +3,7 @@ import sys
 from functools import wraps
 
 import slack_sdk
-from langchain_core.tools import StructuredTool, tool
+from langchain_core.tools import StructuredTool
 from slack_sdk.errors import SlackApiError
 
 
@@ -24,18 +24,14 @@ class SlackTools:
         self.client = slack_sdk.WebClient(token=os.getenv("SLACK_USER_TOKEN"))
 
     def get_tools(self):
-        return [self.post_message_tool()]
+        return [StructuredTool.from_function(f) for f in [self.post_message]]
 
-    def post_message_tool(self) -> StructuredTool:
-        @tool
-        @handle_error
-        def post_message(channel: str, text: str) -> tuple[bool, str, str]:
-            """Post a message to a Slack channel."""
-            res = self.client.chat_postMessage(channel=channel, text=text)
-            print(f"message sent to {channel}: {text}")
-            return res["ok"], res["channel"], res["ts"]
-
-        return post_message
+    @handle_error
+    def post_message(self, channel: str, text: str) -> tuple[bool, str, str]:
+        """Post a message to a Slack channel."""
+        res = self.client.chat_postMessage(channel=channel, text=text)
+        print(f"message sent to {channel}: {text}")
+        return res["ok"], res["channel"], res["ts"]
 
     @handle_error
     def post_ephemeral(self, channel: str, text: str, user: str) -> tuple[bool, str, str]:

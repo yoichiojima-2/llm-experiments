@@ -46,7 +46,6 @@ class Agent:
                 Answer the following questions as best you can.
                 You have access to the following tools:
                 {self.tools}
-                If you don't need agent with tools, send to agent_w_no_tool.
                 """
             )
             msgs = [SystemMessage(content=system_prompt), *state["messages"]]
