@@ -12,6 +12,8 @@ from langchain_tavily import TavilySearch
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
+from llm_experiments.slack_tools import SlackTools
+
 
 def duckduckgo():
     return DuckDuckGoSearchRun()
@@ -23,6 +25,10 @@ def shell(*a, **kw):
 
 async def browser_tools(browser):
     return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
+
+
+def slack_tools():
+    return SlackTools().get_tools()
 
 
 def python_repl() -> str:
