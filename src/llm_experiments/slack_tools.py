@@ -3,9 +3,8 @@ import sys
 from functools import wraps
 
 import slack_sdk
-from langchain_core.tools import StructuredTool, tool
+from langchain_core.tools import tool
 from slack_sdk.errors import SlackApiError
-from langgraph.prebuilt import ToolNode
 
 
 def handle_error(func):
@@ -29,7 +28,7 @@ class SlackTools:
         def post(channel: str, text: str) -> tuple[bool, str, str]:
             """post a message to a Slack channel."""
             self.post_message(channel, text)
-        
+
         @tool
         def delete(channel: str, ts: str) -> tuple[bool, str, str]:
             """delete a message from a Slack channel."""

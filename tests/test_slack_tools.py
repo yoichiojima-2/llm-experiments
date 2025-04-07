@@ -12,4 +12,3 @@ def test_slack_tools():
     status, channel, ts = slack_tools.delete_message(channel, ts)
     assert status
     print(f"status: {status}, channel: {channel}, ts: {ts}")
-    
