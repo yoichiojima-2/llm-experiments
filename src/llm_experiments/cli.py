@@ -6,10 +6,9 @@ from langchain.chat_models.base import BaseChatModel
 from langchain_community.tools.playwright.utils import create_async_playwright_browser
 from langgraph.checkpoint.memory import BaseCheckpointSaver, MemorySaver
 
-from llm_experiments import tools
+from llm_experiments import tools as t
 from llm_experiments.agent import Agent, ConfigType
 from llm_experiments.llm import create_model
-
 
 
 def parse_args() -> Namespace:
@@ -27,11 +26,9 @@ def parse_args() -> Namespace:
 
 async def main() -> None:
     args = parse_args()
-
     model = create_model(args.model)
     memory = MemorySaver()
     config = {"configurable": {"thread_id": "default"}}
-
     match args.agent:
         case "search":
             await search(model, memory, config)
@@ -54,7 +51,7 @@ async def main() -> None:
 async def search(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
     agent = Agent(
         model=model,
-        tools=[tools.tavily(), tools.duckduckgo(), tools.serper(), tools.wikipedia()],
+        tools=[t.tavily(), t.duckduckgo(), t.serper(), t.wikipedia()],
         memory=memory,
         config=config,
     )
@@ -64,7 +61,7 @@ async def search(model: BaseChatModel, memory: BaseCheckpointSaver, config: Conf
 async def shell_w_search(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
     agent = Agent(
         model=model,
-        tools=[tools.shell(ask_human_input=True), tools.tavily(), tools.duckduckgo(), tools.serper()],
+        tools=[t.shell(ask_human_input=True), t.tavily(), t.duckduckgo(), t.serper()],
         memory=memory,
         config=config,
     )
@@ -74,7 +71,7 @@ async def shell_w_search(model: BaseChatModel, memory: BaseCheckpointSaver, conf
 async def shell(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
     agent = Agent(
         model=model,
-        tools=[tools.shell(ask_human_input=True)],
+        tools=[t.shell(ask_human_input=True)],
         memory=memory,
         config=config,
     )
@@ -84,7 +81,7 @@ async def shell(model: BaseChatModel, memory: BaseCheckpointSaver, config: Confi
 async def slack(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
     agent = Agent(
         model=model,
-        tools=tools.slack_tools(),
+        tools=t.slack_tools(),
         memory=memory,
         config=config,
     )
@@ -94,7 +91,7 @@ async def slack(model: BaseChatModel, memory: BaseCheckpointSaver, config: Confi
 async def python_repl(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
     agent = Agent(
         model=model,
-        tools=[tools.python_repl()],
+        tools=[t.python_repl()],
         memory=memory,
         config=config,
     )
@@ -104,7 +101,7 @@ async def python_repl(model: BaseChatModel, memory: BaseCheckpointSaver, config:
 async def sql(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
     agent = Agent(
         model=model,
-        tools=[*tools.sql_tools(model, "sql"), tools.shell(), tools.duckduckgo()],
+        tools=[*t.sql_tools(model, "sql"), t.shell(), t.duckduckgo()],
         memory=memory,
         config=config,
     )
@@ -116,9 +113,8 @@ async def browser(model: BaseChatModel, memory: BaseCheckpointSaver, config: Con
     import nest_asyncio
 
     nest_asyncio.apply()
-
     async with create_async_playwright_browser(headless=False) as async_browser:
-        toolkit = await tools.browser_tools(async_browser)
+        toolkit = await t.browser_tools(async_browser)
         agent = Agent(
             model=model,
             tools=toolkit,
