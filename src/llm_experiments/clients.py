@@ -7,10 +7,9 @@ from langchain_community.tools.playwright.utils import create_async_playwright_b
 from langgraph.checkpoint.memory import BaseCheckpointSaver, MemorySaver
 
 from llm_experiments import tools
-from llm_experiments.agent import Agent
+from llm_experiments.agent import Agent, ConfigType
 from llm_experiments.llm import create_model
 
-ConfigType = dict[str, dict[str, str]]
 
 
 def parse_args() -> Namespace:

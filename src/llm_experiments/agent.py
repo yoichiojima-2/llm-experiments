@@ -9,6 +9,8 @@ from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 
 
+ConfigType = dict[str, dict[str, str]]
+
 class Agent:
     def __init__(
         self, model: BaseChatModel, tools: list[BaseTool], memory: BaseCheckpointSaver, config: dict[str, dict[str, str]]
