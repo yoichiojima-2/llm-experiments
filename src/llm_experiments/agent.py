@@ -1,71 +1,61 @@
-import textwrap
-from typing import Callable, Literal
+import sys
+from typing import Callable
 
-from langchain.agents import AgentExecutor
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import SystemMessage
+from langchain_core.messages.base import BaseMessage
 from langchain_core.tools.base import BaseTool
 from langgraph.checkpoint.memory import BaseCheckpointSaver
-from langgraph.graph import START, MessagesState, StateGraph
-from langgraph.graph.graph import CompiledGraph
-from langgraph.types import Command
-
-NodeType = Callable[[MessagesState], Command]
+from langgraph.graph import END, START, MessagesState, StateGraph
+from langgraph.prebuilt import ToolNode
 
 
 class Agent:
     def __init__(
-        self,
-        executor: AgentExecutor,
-        model: BaseChatModel,
-        memory: BaseCheckpointSaver,
-        tools: list[BaseTool],
-        verbose: bool = False,
-        config: dict[str, dict[str, str]] = {"configurable": {"thread_id": "default"}},
+        self, model: BaseChatModel, tools: list[BaseTool], memory: BaseCheckpointSaver, config: dict[str : dict[str]]
     ):
-        self.executor = executor
         self.model = model
-        self.memory = memory
-        self.verbose = verbose
         self.tools = tools
+        self.memory = memory
         self.config = config
         self.graph = self.compile_graph()
 
-    def compile_graph(self) -> CompiledGraph:
+    def create_agent(self) -> Callable[[MessagesState], dict[str, list[BaseMessage]]]:
+        def agent(state: MessagesState):
+            res = self.model.bind_tools(self.tools).invoke(state["messages"])
+            return {"messages": [res]}
+
+        return agent
+
+    def create_tools(self):
+        return ToolNode(self.tools)
+
+    def create_should_continue(self):
+        def should_continue(state: MessagesState):
+            if state["messages"][-1].tool_calls:
+                return "tools"
+            return END
+
+        return should_continue
+
+    def compile_graph(self):
         g = StateGraph(MessagesState)
-        g.add_node("superagent", self.create_super_node())
-        g.add_node("agent", self.create_node())
-        g.add_edge(START, "superagent")
-        g.add_edge("superagent", "agent")
+        g.add_node("agent", self.create_agent())
+        g.add_node("tools", self.create_tools())
+        g.add_edge(START, "agent")
+        g.add_edge("tools", "agent")
+        g.add_conditional_edges("agent", self.create_should_continue(), ["tools", END])
         return g.compile(checkpointer=self.memory)
 
-    def create_super_node(self) -> NodeType:
-        def superagent(state: MessagesState) -> Command[Literal["agent", "__end__"]]:
-            system_prompt = textwrap.dedent(
-                f"""
-                Answer the following questions as best you can.
-                You have access to the following tools:
-                {self.tools}
-                """
-            )
-            msgs = [SystemMessage(content=system_prompt), *state["messages"]]
-            res = self.model.bind_tools(self.tools).invoke(msgs)
-            if len(res.tool_calls) > 0:
-                tool_call_id = res.tool_calls[-1]["id"]
-                tool_msg = {
-                    "role": "tool",
-                    "content": "Successfully transferred",
-                    "tool_call_id": tool_call_id,
-                }
-                return Command(goto="agent", update={"messages": [res, tool_msg]})
-            else:
-                return Command(goto="__end__", update={"messages": [res]})
-
-        return superagent
-
-    def create_node(self) -> NodeType:
-        def node(state: MessagesState):
-            res = self.executor.invoke({"input": state["messages"]})
-            return {"messages": [res["output"]]}
-
-        return node
+    async def start_interactive_chat(self) -> None:
+        try:
+            while True:
+                user_input = input("user: ")
+                if user_input == "q":
+                    print("quitting...")
+                    return
+                print()
+                async for i in self.graph.astream({"messages": [user_input]}, config=self.config, stream_mode="messages"):
+                    print(i[0].content, end="")
+                print("\n\n")
+        except Exception as e:
+            print(f"error: {e}", file=sys.stderr)
