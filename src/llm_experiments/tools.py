@@ -6,7 +6,7 @@ from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain_community.tools import DuckDuckGoSearchRun, ShellTool, WikipediaQueryRun
 from langchain_community.utilities import GoogleSerperAPIWrapper, WikipediaAPIWrapper
 from langchain_community.utilities.sql_database import SQLDatabase
-from langchain_core.tools import StructuredTool, tool
+from langchain_core.tools import tool
 from langchain_experimental.utilities import PythonREPL
 from langchain_tavily import TavilySearch
 from sqlalchemy import create_engine
@@ -31,7 +31,7 @@ def slack_tools():
     return SlackTools().tools
 
 
-def python_repl() -> str:
+def python_repl():
     @tool
     def python_repl_tool(script):
         """python repr run"""
@@ -50,7 +50,7 @@ def file_management_tools():
 
 def serper():
     @tool
-    def serper_tool(query) -> str:
+    def serper_tool(query):
         """serper search"""
         return GoogleSerperAPIWrapper().run(query)
 
@@ -76,5 +76,5 @@ def sql_tools(model, db_name):
     return SQLDatabaseToolkit(db=db, llm=model).get_tools()
 
 
-def make_tools_by_name(tools) -> dict[str, StructuredTool]:
+def make_tools_by_name(tools):
     return {tool.name: tool for tool in tools}

@@ -1,25 +1,18 @@
 import sys
-from typing import Callable
 
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages.base import BaseMessage
-from langchain_core.tools.base import BaseTool
-from langgraph.checkpoint.memory import BaseCheckpointSaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 
-ConfigType = dict[str, dict[str, str]]
-
 
 class Agent:
-    def __init__(self, model: BaseChatModel, tools: list[BaseTool], memory: BaseCheckpointSaver, config: ConfigType):
+    def __init__(self, model, tools, memory, config):
         self.model = model
         self.tools = tools
         self.memory = memory
         self.config = config
         self.graph = self.compile_graph()
 
-    def create_agent(self) -> Callable[[MessagesState], dict[str, list[BaseMessage]]]:
+    def create_agent(self):
         def agent(state: MessagesState):
             res = self.model.bind_tools(self.tools).invoke(state["messages"])
             return {"messages": [res]}

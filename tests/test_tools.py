@@ -1,5 +1,5 @@
-from langgraph.prebuilt import create_react_agent
 from langchain_community.tools.playwright.utils import create_async_playwright_browser
+from langgraph.prebuilt import create_react_agent
 
 from llm_experiments import tools
 from llm_experiments.llm import create_model
@@ -15,6 +15,7 @@ def test_duckduckgo_tools():
 
 async def test_browser():
     import nest_asyncio
+
     nest_asyncio.apply()
     async with create_async_playwright_browser() as async_browser:
         toolkit = await tools.browser_tools(async_browser)
