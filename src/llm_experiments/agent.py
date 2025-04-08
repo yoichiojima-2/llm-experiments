@@ -4,14 +4,24 @@ from typing import Callable
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages.base import BaseMessage
 from langchain_core.tools.base import BaseTool
-from langgraph.checkpoint.memory import BaseCheckpointSaver
+from langgraph.checkpoint.memory import BaseCheckpointSaver, MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
+from typing_extensions import TypedDict
+
+from llm_experiments.llm import create_model
+
+
+class AgentConfig(TypedDict):
+    model: BaseChatModel = create_model()
+    memory: BaseCheckpointSaver = MemorySaver()
+    tools: list[BaseTool] = []
+    configurable: dict[str, dict[str, str]] = {"configurable": {"thread_id": "default"}}
 
 
 class Agent:
     def __init__(
-        self, model: BaseChatModel, tools: list[BaseTool], memory: BaseCheckpointSaver, config: dict[str : dict[str]]
+        self, model: BaseChatModel, tools: list[BaseTool], memory: BaseCheckpointSaver, config: dict[str, dict[str, str]]
     ):
         self.model = model
         self.tools = tools

@@ -2,13 +2,15 @@ import asyncio
 from argparse import ArgumentParser, Namespace
 
 from dotenv import load_dotenv
+from langchain.chat_models.base import BaseChatModel
 from langchain_community.tools.playwright.utils import create_async_playwright_browser
-from langchain_core.language_models.chat_models import BaseChatModel
 from langgraph.checkpoint.memory import BaseCheckpointSaver, MemorySaver
 
 from llm_experiments import tools
 from llm_experiments.agent import Agent
 from llm_experiments.llm import create_model
+
+ConfigType = dict[str, dict[str, str]]
 
 
 def parse_args() -> Namespace:
@@ -25,83 +27,108 @@ def parse_args() -> Namespace:
 
 
 async def main() -> None:
-    load_dotenv()
     args = parse_args()
-    config = Config(model=create_model(args.model), memory=MemorySaver())
+
+    model = create_model(args.model)
+    memory = MemorySaver()
+    config = {"configurable": {"thread_id": "default"}}
+
     match args.agent:
         case "search":
-            await search(config)
+            await search(model, memory, config)
         case "shell":
-            await shell(config)
+            await shell(model, memory, config)
         case "browser":
-            await browser(config)
+            await browser(model, memory, config)
         case "shell_w_search":
-            await shell_w_search(config)
+            await shell_w_search(model, memory, config)
         case "sql":
-            await sql(config)
+            await sql(model, memory, config)
         case "slack":
-            await slack(config)
+            await slack(model, memory, config)
         case "python-repl":
-            await python_repl(config)
+            await python_repl(model, memory, config)
         case _:
             raise ValueError(f"unknown agent: {args.agent}")
 
 
-class Config:
-    def __init__(self, model: BaseChatModel, memory: BaseCheckpointSaver):
-        self.model = model
-        self.memory = memory
-        self.configurable = {"configurable": {"thread_id": "default"}}
-
-
-async def search(config: Config) -> None:
-    toolkit = [tools.tavily(), tools.duckduckgo(), tools.serper(), tools.wikipedia()]
-    agent = Agent(model=config.model, tools=toolkit, memory=config.memory, config=config.configurable)
+async def search(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
+    agent = Agent(
+        model=model,
+        tools=[tools.tavily(), tools.duckduckgo(), tools.serper(), tools.wikipedia()],
+        memory=memory,
+        config=config,
+    )
     await agent.start_interactive_chat()
 
 
-async def shell_w_search(config: Config) -> None:
-    toolkit = [tools.shell(ask_human_input=True), tools.tavily(), tools.duckduckgo(), tools.serper()]
-    agent = Agent(model=config.model, tools=toolkit, memory=config.memory, config=config.configurable)
+async def shell_w_search(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
+    agent = Agent(
+        model=model,
+        tools=[tools.shell(ask_human_input=True), tools.tavily(), tools.duckduckgo(), tools.serper()],
+        memory=memory,
+        config=config,
+    )
     await agent.start_interactive_chat()
 
 
-async def shell(config: Config) -> None:
-    toolkit = [tools.shell(ask_human_input=True)]
-    agent = Agent(model=config.model, tools=toolkit, memory=config.memory, config=config.configurable)
+async def shell(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
+    agent = Agent(
+        model=model,
+        tools=[tools.shell(ask_human_input=True)],
+        memory=memory,
+        config=config,
+    )
+    await agent.start_interactive_chat()
+
+
+async def slack(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
+    agent = Agent(
+        model=model,
+        tools=tools.slack_tools(),
+        memory=memory,
+        config=config,
+    )
+    await agent.start_interactive_chat()
+
+
+async def python_repl(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
+    agent = Agent(
+        model=model,
+        tools=[tools.python_repl()],
+        memory=memory,
+        config=config,
+    )
+    await agent.start_interactive_chat()
+
+
+async def sql(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
+    agent = Agent(
+        model=model,
+        tools=[*tools.sql_tools(model, "sql"), tools.shell(), tools.duckduckgo()],
+        memory=memory,
+        config=config,
+    )
     await agent.start_interactive_chat()
 
 
 # fixme
-async def slack(config: Config) -> None:
-    toolkit = [*tools.slack_tools()]
-    agent = Agent(model=config.model, tools=toolkit, memory=config.memory, config=config.configurable)
-    await agent.start_interactive_chat()
-
-
-async def python_repl(config: Config) -> None:
-    toolkit = [tools.python_repl()]
-    agent = Agent(model=config.model, tools=toolkit, memory=config.memory, config=config.configurable)
-    await agent.start_interactive_chat()
-
-
-async def sql(config: Config) -> None:
-    toolkit = [*tools.sql_tools(config.model, "sql"), tools.shell(), tools.duckduckgo()]
-    agent = Agent(model=config.model, tools=toolkit, memory=config.memory, config=config.configurable)
-    await agent.start_interactive_chat()
-
-
-# fixme
-async def browser(config: Config) -> None:
+async def browser(model: BaseChatModel, memory: BaseCheckpointSaver, config: ConfigType) -> None:
     import nest_asyncio
 
     nest_asyncio.apply()
 
     async with create_async_playwright_browser(headless=False) as async_browser:
         toolkit = await tools.browser_tools(async_browser)
-        agent = Agent(model=config.model, tools=toolkit, memory=config.memory, config=config.configurable)
+        agent = Agent(
+            model=model,
+            tools=toolkit,
+            memory=memory,
+            config=config,
+        )
         await agent.start_interactive_chat()
 
 
 if __name__ == "__main__":
+    load_dotenv()
     asyncio.run(main())
