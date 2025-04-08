@@ -1,4 +1,5 @@
 from langgraph.prebuilt import create_react_agent
+from langchain_community.tools.playwright.utils import create_async_playwright_browser
 
 from llm_experiments import tools
 from llm_experiments.llm import create_model
@@ -12,7 +13,16 @@ def test_duckduckgo_tools():
     print(last_msg)
 
 
-def test_browser(): ...
+async def test_browser():
+    import nest_asyncio
+    nest_asyncio.apply()
+    async with create_async_playwright_browser() as async_browser:
+        toolkit = await tools.browser_tools(async_browser)
+        agent = create_react_agent(create_model(), toolkit)
+        res = agent.invoke({"messages": "go to wikipedia.org"})
+        last_msg = res["messages"][-1].content
+        assert last_msg
+        print(last_msg)
 
 
 def test_shell_tools():
