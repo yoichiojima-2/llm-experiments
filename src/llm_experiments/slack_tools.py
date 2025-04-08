@@ -23,16 +23,17 @@ class SlackTools:
     def __init__(self):
         self.client = slack_sdk.WebClient(token=os.getenv("SLACK_USER_TOKEN"))
 
-    def get_tools(self):
+    @property
+    def tools(self):
         @tool
         def post(channel: str, text: str) -> tuple[bool, str, str]:
             """post a message to a Slack channel."""
-            self.post_message(channel, text)
+            return self.post_message(channel, text)
         
         @tool
         def delete(channel: str, ts: str) -> tuple[bool, str, str]:
             """delete a message from a Slack channel."""
-            self.delete_message(channel, ts)
+            return self.delete_message(channel, ts)
 
         return [post, delete]
 
