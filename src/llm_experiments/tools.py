@@ -6,7 +6,7 @@ from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain_community.tools import DuckDuckGoSearchRun, ShellTool, WikipediaQueryRun
 from langchain_community.utilities import GoogleSerperAPIWrapper, WikipediaAPIWrapper
 from langchain_community.utilities.sql_database import SQLDatabase
-from langchain_core.tools import tool, StructuredTool
+from langchain_core.tools import StructuredTool, tool
 from langchain_experimental.utilities import PythonREPL
 from langchain_tavily import TavilySearch
 from sqlalchemy import create_engine

@@ -1,5 +1,5 @@
-from llm_experiments.tools import make_tools_by_name
 from llm_experiments.slack_tools import SlackTools
+from llm_experiments.tools import make_tools_by_name
 
 
 def test_slack_tools():
