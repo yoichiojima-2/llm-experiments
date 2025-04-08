@@ -13,7 +13,7 @@ ConfigType = dict[str, dict[str, str]]
 
 class Agent:
     def __init__(
-        self, model: BaseChatModel, tools: list[BaseTool], memory: BaseCheckpointSaver, config: dict[str, dict[str, str]]
+        self, model: BaseChatModel, tools: list[BaseTool], memory: BaseCheckpointSaver, config: ConfigType
     ):
         self.model = model
         self.tools = tools
