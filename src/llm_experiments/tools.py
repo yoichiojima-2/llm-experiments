@@ -28,7 +28,7 @@ async def browser_tools(browser):
 
 
 def slack_tools():
-    return SlackTools().get_tools()
+    return SlackTools().tools
 
 
 def python_repl() -> str:
