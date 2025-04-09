@@ -1,7 +1,6 @@
 import asyncio
 from argparse import ArgumentParser
 
-from dotenv import load_dotenv
 from langchain_community.tools.playwright.utils import create_async_playwright_browser
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -140,5 +139,4 @@ async def browser_w_search(model, memory, config):
 
 
 if __name__ == "__main__":
-    load_dotenv()
     asyncio.run(main())
