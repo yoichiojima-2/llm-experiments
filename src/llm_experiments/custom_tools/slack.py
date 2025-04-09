@@ -55,6 +55,11 @@ class SlackTools:
             """list all conversations in Slack."""
             return self.client.conversations_list()
 
+        @tool
+        def get_conversation_history(channel: str):
+            """get the history of a conversation in Slack."""
+            return self.client.conversations_history(channel=channel)
+
         return [
             post_message,
             delete_message,
@@ -65,4 +70,5 @@ class SlackTools:
             upload_file,
             add_remote_file,
             list_conversations,
+            get_conversation_history,
         ]
