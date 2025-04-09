@@ -12,7 +12,7 @@ from langchain_tavily import TavilySearch
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
-from llm_experiments.slack_tools import SlackTools
+from llm_experiments.custom_tools.slack import SlackTools
 
 
 def duckduckgo():
