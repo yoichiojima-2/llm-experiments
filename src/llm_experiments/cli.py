@@ -16,7 +16,7 @@ def parse_args():
     opt(
         "--agent",
         "-a",
-        choices=["search", "shell", "browser", "shell_w_search", "sql", "slack", "python-repl"],
+        choices=["search", "shell", "browser", "shell_w_search", "sql", "slack", "python-repl", "browser_w_search"],
         default="search",
     )
     opt("--model", "-m", type=str, default="4o-mini")
@@ -43,6 +43,8 @@ async def main():
             await slack(model, memory, config)
         case "python-repl":
             await python_repl(model, memory, config)
+        case "browser_w_search":
+            await browser_w_search(model, memory, config)
         case _:
             raise ValueError(f"unknown agent: {args.agent}")
 
@@ -107,7 +109,6 @@ async def sql(model, memory, config):
     await agent.start_interactive_chat()
 
 
-# fixme
 async def browser(model, memory, config):
     import nest_asyncio
 
@@ -117,6 +118,21 @@ async def browser(model, memory, config):
         agent = Agent(
             model=model,
             tools=toolkit,
+            memory=memory,
+            config=config,
+        )
+        await agent.start_interactive_chat()
+
+
+async def browser_w_search(model, memory, config):
+    import nest_asyncio
+
+    nest_asyncio.apply()
+    async with create_async_playwright_browser(headless=False) as async_browser:
+        browser_tools = await t.browser_tools(async_browser)
+        agent = Agent(
+            model=model,
+            tools=[*browser_tools, t.duckduckgo(), t.serper(), t.wikipedia(), t.tavily()],
             memory=memory,
             config=config,
         )
