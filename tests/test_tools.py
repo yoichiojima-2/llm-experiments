@@ -3,6 +3,17 @@ from langgraph.prebuilt import create_react_agent
 
 from llm_experiments import tools
 from llm_experiments.llm import create_model
+from llm_experiments.custom_tools.slack import SlackTools
+from llm_experiments.tools import make_tools_by_name
+
+
+def test_slack_tools():
+    slack_tools = SlackTools()
+    tool_by_name = make_tools_by_name(slack_tools.tools)
+    res = tool_by_name["post_message"].invoke({"channel": "test", "text": "hello from agent"})
+    assert res["ok"]
+    res = tool_by_name["delete_message"].invoke({"channel": res["channel"], "ts": res["ts"]})
+    assert res["ok"]
 
 
 def test_duckduckgo_tools():
