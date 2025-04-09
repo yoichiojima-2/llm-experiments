@@ -26,16 +26,55 @@ class SlackTools:
     @property
     def tools(self):
         @tool
-        def post(channel: str, text: str):
+        def post_message(channel: str, text: str):
             """post a message to a Slack channel."""
             return self.post_message(channel, text)
 
         @tool
-        def delete(channel: str, ts: str):
+        def delete_message(channel: str, ts: str):
             """delete a message from a Slack channel."""
             return self.delete_message(channel, ts)
 
-        return [post, delete]
+        @tool
+        def update_message(channel: str, ts: str, text: str):
+            """update a message in a Slack channel."""
+            return self.update_message(channel, ts, text)
+
+        @tool
+        def add_reaction(channel: str, emoji_name: str, ts: str):
+            """add a reaction to a message in a Slack channel."""
+            return self.add_reaction(channel, emoji_name, ts)
+
+        @tool
+        def remove_reaction(channel: str, emoji_name: str, ts: str):
+            """remove a reaction from a message in a Slack channel."""
+            return self.remove_reaction(channel, emoji_name, ts)
+
+        @tool
+        def upload_file(channels: str, file: str):
+            """upload a file to a Slack channel."""
+            return self.upload_file(channels, file)
+
+        @tool
+        def add_remote_file(channels: list[str], file: str):
+            """add a remote file to a Slack channel."""
+            return self.add_remote_file(channels, file)
+
+        @tool
+        def list_conversations():
+            """list all conversations in Slack."""
+            return self.list_conversations()
+
+        return [
+            post_message,
+            delete_message,
+            update_message,
+            add_reaction,
+            remove_reaction,
+            upload_file,
+            add_remote_file,
+            list_conversations,
+        ]
 
     @handle_error
     def post_message(self, channel: str, text: str):
@@ -68,3 +107,7 @@ class SlackTools:
     @handle_error
     def add_remote_file(self, channels: list[str], file: str):
         return self.client.files_remote_add(channels=channels, file=file)
+
+    @handle_error
+    def list_conversations(self):
+        return self.client.conversations_list()
