@@ -18,7 +18,7 @@ def parse_args():
         choices=["search", "shell", "browser", "shell_w_search", "sql", "slack", "python-repl", "browser_w_search"],
         default="search",
     )
-    opt("--model", "-m", type=str, default="4o-mini")
+    opt("--model", "-m", type=str, choices=["4o-mini", "o3-mini", "deepseek", "llama", "gemini"], default="4o-mini")
     return parser.parse_args()
 
 
