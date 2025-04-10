@@ -51,14 +51,44 @@ class SlackTools:
             return self.client.files_remote_add(channels=channels, file=file)
 
         @tool
-        def list_conversations():
+        def list_conversations(limit: int = 100):
             """list all conversations in Slack."""
-            return self.client.conversations_list()
+            return self.client.conversations_list(limit=limit)
 
         @tool
         def get_conversation_history(channel: str):
             """get the history of a conversation in Slack."""
             return self.client.conversations_history(channel=channel)
+
+        @tool
+        def start_direct_message(users: list[str]):
+            """open a conversation in Slack."""
+            return self.client.conversations_open(users=users)
+
+        @tool
+        def create_channel(name: str):
+            """create a new channel in Slack."""
+            return self.client.conversations_archive(name=name)
+
+        @tool
+        def get_conversation_info(channel: str):
+            """get information about a conversation in Slack."""
+            return self.client.conversations_info(channel=channel)
+
+        @tool
+        def get_members_of_conversation(channel: str):
+            """get members of a conversation in Slack."""
+            return self.client.conversations_members(channel=channel)
+
+        @tool
+        def join_conversation(channel: str):
+            """join a conversation in Slack."""
+            return self.client.conversations_join(channel=channel)
+
+        @tool
+        def leave_conversation(channel: str):
+            """leave a conversation in Slack."""
+            return self.client.conversations_leave(channel=channel)
 
         return [
             post_message,
@@ -71,4 +101,10 @@ class SlackTools:
             add_remote_file,
             list_conversations,
             get_conversation_history,
+            start_direct_message,
+            create_channel,
+            get_conversation_info,
+            get_members_of_conversation,
+            join_conversation,
+            leave_conversation,
         ]
