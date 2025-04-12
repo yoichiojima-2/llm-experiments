@@ -12,32 +12,35 @@ class Agent:
         self.config = config
         self.graph = self.compile_graph()
 
-    def create_agent(self):
+    def compile_graph(self):
+        g = StateGraph(MessagesState)
+        g.add_node("agent", self.agent_node)
+        g.add_node("tools", self.tools_node)
+        g.add_edge(START, "agent")
+        g.add_edge("tools", "agent")
+        g.add_conditional_edges("agent", self.branch_node, ["tools", END])
+        return g.compile(checkpointer=self.memory)
+
+    @property
+    def agent_node(self):
         def agent(state: MessagesState):
             res = self.model.bind_tools(self.tools).invoke(state["messages"])
             return {"messages": [res]}
 
         return agent
 
-    def create_tools(self):
+    @property
+    def tools_node(self):
         return ToolNode(self.tools)
 
-    def create_should_continue(self):
+    @property
+    def branch_node(self):
         def should_continue(state: MessagesState):
             if state["messages"][-1].tool_calls:
                 return "tools"
             return END
 
         return should_continue
-
-    def compile_graph(self):
-        g = StateGraph(MessagesState)
-        g.add_node("agent", self.create_agent())
-        g.add_node("tools", self.create_tools())
-        g.add_edge(START, "agent")
-        g.add_edge("tools", "agent")
-        g.add_conditional_edges("agent", self.create_should_continue(), ["tools", END])
-        return g.compile(checkpointer=self.memory)
 
     async def start_interactive_chat(self) -> None:
         try:
