@@ -1,15 +1,15 @@
 """
-this example demonstrates how to create a software development team
+this example demonstrates how to create a software engineering team
 """
 
 import asyncio
 import sys
 from typing import Literal
 
-from langchain_core.tools import tool as member  # just don't like call members tools
+from langchain_core.tools import tool as member  # just don't like calling members tools
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
-from langgraph.prebuilt import ToolNode as MemberNode  # just don't like call members tools
+from langgraph.prebuilt import ToolNode as MemberNode  # just don't like calling members tools
 from langgraph.types import Command
 
 from llm_experiments import tools as t
@@ -18,7 +18,7 @@ from llm_experiments.llm import create_model
 
 
 async def main():
-    config = {"configurable": {"thread_id": "software-development"}}
+    config = {"configurable": {"thread_id": "swe"}}
     dev_team = SWE_Team(create_model(), MemorySaver(), config)
     await dev_team.start_interactive_chat()
 
