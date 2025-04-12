@@ -23,7 +23,7 @@ async def main():
     await dev_team.start_interactive_chat()
 
 
-class SWE_Team(Agent):
+class SWE_Team:
     def __init__(self, model, memory, config):
         self.model = model
         self.memory = memory
