@@ -55,3 +55,6 @@ class Agent:
                 print("\n\n")
         except Exception as e:
             print(f"error: {e}", file=sys.stderr)
+
+    def invoke(self, *a, **kw):
+        return self.graph.invoke(*a, **kw)
