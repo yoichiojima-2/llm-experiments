@@ -4,7 +4,6 @@ this example demonstrates how to create a software engineering team
 
 import asyncio
 import sys
-from pathlib import Path
 
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
@@ -20,7 +19,7 @@ from llm_experiments.llm import create_model
 async def main():
     config = {"configurable": {"thread_id": "swe"}}
     dev_team = SWE_Team(
-        create_model(),
+        create_model("o3-mini"),
         MemorySaver(),
         config,
     )
