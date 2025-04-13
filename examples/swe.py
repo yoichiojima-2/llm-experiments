@@ -4,6 +4,7 @@ this example demonstrates how to create a software engineering team
 
 import asyncio
 import sys
+from pathlib import Path
 
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
@@ -18,12 +19,19 @@ from llm_experiments.llm import create_model
 
 async def main():
     config = {"configurable": {"thread_id": "swe"}}
-    dev_team = SWE_Team(create_model(), MemorySaver(), config)
+    dev_team = SWE_Team(
+        create_model(),
+        MemorySaver(),
+        config, Path(__file__).parent.parent / "output/swe",
+    )
     await dev_team.start_interactive_chat()
 
 
 class SWE_Team:
-    def __init__(self, model, memory, config):
+    def __init__(self, model, memory, config, root_dir: Path):
+        if not root_dir.exists():
+            root_dir.mkdir(parents=True, exist_ok=True)
+
         self.model = model
         self.memory = memory
         self.config = config
@@ -32,7 +40,9 @@ class SWE_Team:
             self.programmer_node,
             self.reviewer_node,
             self.tester_node,
+            *t.file_management_tools(root_dir=str(root_dir), selected_tools=["read_file", "list_directory"])
         ]
+        self.root_dir = root_dir
         self.graph = self.compile_graph()
 
     def compile_graph(self):
@@ -52,7 +62,8 @@ class SWE_Team:
                     content=(
                         "You are a software engineering team lead. "
                         "You will be responsible for leading the team and ensuring that the system meets the requirements. "
-                        "lead members specialized in design, programming, reviewing, and testing."
+                        "lead members specialized in design, programming, reviewing, and testing. "
+                        f"Use {self.root_dir} as the root directory for all file operations. "
                     )
                 ),
                 *state["messages"],
