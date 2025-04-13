@@ -44,8 +44,8 @@ def wikipedia():
     return WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
 
 
-def file_management_tools():
-    return FileManagementToolkit().get_tools()
+def file_management_tools(*a, **kw):
+    return FileManagementToolkit(*a, **kw).get_tools()
 
 
 def serper():
