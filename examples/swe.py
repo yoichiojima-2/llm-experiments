@@ -4,13 +4,11 @@ this example demonstrates how to create a software engineering team
 
 import asyncio
 import sys
-from typing import Literal
 
-from langchain_core.tools import tool as member  # just don't like calling members tools
+from langchain_core.tools import tool as member
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
-from langgraph.prebuilt import ToolNode as MemberNode  # just don't like calling members tools
-from langgraph.types import Command
+from langgraph.prebuilt import ToolNode as MemberNode
 
 from llm_experiments import tools as t
 from llm_experiments.agent import Agent
@@ -34,7 +32,7 @@ class SWE_Team:
     def compile_graph(self):
         g = StateGraph(MessagesState)
         g.add_node("lead", self.lead_node)
-        g.add_node("members", self.members_node)
+        g.add_node("members", MemberNode([*self.members]))
         g.add_edge(START, "lead")
         g.add_edge("members", "lead")
         g.add_conditional_edges("lead", self.branch_node, ["members", END])
@@ -49,13 +47,9 @@ class SWE_Team:
         return lead
 
     @property
-    def members_node(self):
-        return MemberNode([*self.members])
-
-    @property
     def designer_node(self):
         @member
-        def designer(state: MessagesState) -> Command[Literal["lead"]]:
+        def designer(state: MessagesState):
             """
             design the system and ensuring that it meets the requirements.
             """
@@ -68,7 +62,7 @@ class SWE_Team:
     @property
     def programmer_node(self):
         @member
-        def programmer(state: MessagesState) -> Command[Literal["lead"]]:
+        def programmer(state: MessagesState):
             """
             write the code and ensuring that it meets the requirements.
             """
@@ -82,7 +76,7 @@ class SWE_Team:
     @property
     def reviewer_node(self):
         @member
-        def reviewer(state: MessagesState) -> Command[Literal["lead"]]:
+        def reviewer(state: MessagesState):
             """
             review the code and ensuring that it meets the requirements.
             """
@@ -96,7 +90,7 @@ class SWE_Team:
     @property
     def tester_node(self):
         @member
-        def tester(state: MessagesState) -> Command[Literal["lead"]]:
+        def tester(state: MessagesState):
             """
             test the code and ensuring that it meets the requirements.
             """
