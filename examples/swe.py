@@ -5,10 +5,11 @@ this example demonstrates how to create a software engineering team
 import asyncio
 import sys
 
-from langchain_core.tools import tool as member
+from langchain_core.messages import SystemMessage
+from langchain_core.tools import tool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
-from langgraph.prebuilt import ToolNode as MemberNode
+from langgraph.prebuilt import ToolNode
 
 from llm_experiments import tools as t
 from llm_experiments.agent import Agent
@@ -26,13 +27,18 @@ class SWE_Team:
         self.model = model
         self.memory = memory
         self.config = config
-        self.members = [self.designer_node, self.programmer_node, self.reviewer_node, self.tester_node]
+        self.tools = [
+            self.designer_node,
+            self.programmer_node,
+            self.reviewer_node,
+            self.tester_node,
+        ]
         self.graph = self.compile_graph()
 
     def compile_graph(self):
         g = StateGraph(MessagesState)
         g.add_node("lead", self.lead_node)
-        g.add_node("members", MemberNode([*self.members]))
+        g.add_node("members", ToolNode([*self.tools]))
         g.add_edge(START, "lead")
         g.add_edge("members", "lead")
         g.add_conditional_edges("lead", self.branch_node, ["members", END])
@@ -41,19 +47,31 @@ class SWE_Team:
     @property
     def lead_node(self):
         def lead(state: MessagesState):
-            res = self.model.bind_tools(self.members).invoke(state["messages"])
+            payload = [
+                SystemMessage(
+                    content=(
+                        "You are a software engineering team lead. "
+                        "You will be responsible for leading the team and ensuring that the system meets the requirements. "
+                        "lead members specialized in design, programming, reviewing, and testing."
+                    )
+                ),
+                *state["messages"],
+            ]
+            res = self.model.bind_tools(self.tools).invoke(payload)
             return {"messages": [res]}
 
         return lead
 
     @property
     def designer_node(self):
-        @member
+        @tool
         def designer(state: MessagesState):
             """
             design the system and ensuring that it meets the requirements.
             """
-            agent = Agent(self.model, [t.tavily(), t.duckduckgo(), t.serper()], self.memory, self.config)
+            agent = Agent(
+                self.model, [t.tavily(), t.duckduckgo(), t.serper(), *t.file_management_tools()], self.memory, self.config
+            )
             res = agent.invoke({"messages": state["messages"]})
             return {"messages": res["messages"]}
 
@@ -61,7 +79,7 @@ class SWE_Team:
 
     @property
     def programmer_node(self):
-        @member
+        @tool
         def programmer(state: MessagesState):
             """
             write the code and ensuring that it meets the requirements.
@@ -75,7 +93,7 @@ class SWE_Team:
 
     @property
     def reviewer_node(self):
-        @member
+        @tool
         def reviewer(state: MessagesState):
             """
             review the code and ensuring that it meets the requirements.
@@ -89,7 +107,7 @@ class SWE_Team:
 
     @property
     def tester_node(self):
-        @member
+        @tool
         def tester(state: MessagesState):
             """
             test the code and ensuring that it meets the requirements.
