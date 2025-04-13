@@ -3,6 +3,7 @@ install:
 	uv pip install -e .
 
 clean:
+	-rm .DS_Store
 	find . -name "*.ipynb" -type f -exec uv run jupyter nbconvert --clear-output {} +
 	find . -name .venv -type d -exec rm -rf {} +
 	find . -name __pycache__ -type d -exec rm -rf {} +
