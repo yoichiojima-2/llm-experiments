@@ -1,11 +1,11 @@
 # llm-experiments
 random experiments with llm
 
-# installation
-you need to run `ollama serve` to use `deepseek` and `llama`
+# usage
+you need to run `ollama serve` to use `deepseek` and `llama`.
 
+place a `.env` file at the root of the repository as shown in the example below:
 
-.env example
 ```bash
 # langsmith
 LANGSMITH_TRACING=***
@@ -26,4 +26,29 @@ TAVILY_API_KEY=***
 GOOGLE_API_KEY=***
 # slack
 SLACK_USER_TOKEN=***
+```
+
+then run:
+```bash
+make install && source .env && source .venv/bin/activate
+```
+
+to start working with the swe team, run:
+```bash
+python examples/swe.py
+```
+
+if you just want a simple agent, run:
+```bash
+python -m llm_experiments
+```
+
+additionally, you can work with a more specialized agent by running:
+```bash
+python -m llm_experiments -agent slack
+```
+
+to see all available agent options, run:
+```bash
+python -m llm_experiments -h
 ```
