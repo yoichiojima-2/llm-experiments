@@ -176,3 +176,4 @@ cython_debug/
 # project
 db
 .vscode
+.DS_Store
