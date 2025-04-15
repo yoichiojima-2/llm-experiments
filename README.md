@@ -45,10 +45,10 @@ python -m llm_experiments
 
 additionally, you can work with a more specialized agent by running:
 ```bash
-python -m llm_experiments -agent slack
+python -m llm_experiments --agent slack
 ```
 
 to see all available agent options, run:
 ```bash
-python -m llm_experiments -h
+python -m llm_experiments --help
 ```
