@@ -37,7 +37,7 @@ async def main():
         config,
         workdir=args.workdir,
     )
-    await dev_team.start_interactive_chat(stream_mode=args.stream_mode)  # todo: revert to "messages" for production)
+    await dev_team.start_interactive_chat(stream_mode=args.stream_mode)
 
 
 class SWE_Team:
@@ -55,6 +55,7 @@ class SWE_Team:
             self.programmer_node,
             self.reviewer_node,
             self.tester_node,
+            self.researcher_node,
             *t.file_management_tools(root_dir=str(workdir)),
             t.shell(),
         ]
@@ -87,6 +88,24 @@ class SWE_Team:
             return {"messages": [res]}
 
         return lead
+
+    @property
+    def researcher_node(self):
+        @tool
+        def researcher(state: MessagesState):
+            """
+            research anything that is needed to complete the task.
+            """
+            agent = Agent(
+                self.model,
+                [t.tavily(), t.duckduckgo(), t.serper()],
+                self.memory,
+                self.config,
+            )
+            res = agent.invoke({"messages": state["messages"]})
+            return {"messages": res["messages"]}
+
+        return researcher
 
     @property
     def designer_node(self):
