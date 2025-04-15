@@ -4,6 +4,9 @@ this example demonstrates how to create a software engineering team
 
 import asyncio
 import sys
+from argparse import ArgumentParser
+from pathlib import Path
+from pprint import pprint
 
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
@@ -16,28 +19,46 @@ from llm_experiments.agent import Agent
 from llm_experiments.llm import create_model
 
 
+def parse_args():
+    parser = ArgumentParser(description="SWE team example")
+    parser.add_argument("--workdir", "-w", type=str, default="output/swe")
+    parser.add_argument("--model", "-m", type=str, default="o3-mini")
+    parser.add_argument("--thread_id", "-t", type=str, default="swe")
+    parser.add_argument("--stream-mode", "-s", type=str, default="messages")
+    return parser.parse_args()
+
+
 async def main():
-    config = {"configurable": {"thread_id": "swe"}}
+    args = parse_args()
+    config = {"configurable": {"thread_id": args.thread_id}}
     dev_team = SWE_Team(
-        create_model("o3-mini"),
+        create_model(args.model),
         MemorySaver(),
         config,
+        workdir=args.workdir,
     )
-    await dev_team.start_interactive_chat()
+    await dev_team.start_interactive_chat(stream_mode=args.stream_mode)  # todo: revert to "messages" for production)
 
 
 class SWE_Team:
-    def __init__(self, model, memory, config):
+    def __init__(self, model, memory, config, workdir="output/swe"):
         self.model = model
         self.memory = memory
         self.config = config
+
+        self.workdir = Path(workdir)
+        if not self.workdir.exists():
+            self.workdir.mkdir(parents=True, exist_ok=True)
+
         self.tools = [
             self.designer_node,
             self.programmer_node,
             self.reviewer_node,
             self.tester_node,
+            *t.file_management_tools(root_dir=str(workdir)),
             t.shell(),
         ]
+
         self.graph = self.compile_graph()
 
     def compile_graph(self):
@@ -75,7 +96,10 @@ class SWE_Team:
             design the system and ensuring that it meets the requirements.
             """
             agent = Agent(
-                self.model, [t.tavily(), t.duckduckgo(), t.serper(), *t.file_management_tools()], self.memory, self.config
+                self.model,
+                [t.tavily(), t.duckduckgo(), t.serper(), *t.file_management_tools(root_dir=str(self.workdir))],
+                self.memory,
+                self.config,
             )
             res = agent.invoke({"messages": state["messages"]})
             return {"messages": res["messages"]}
@@ -89,7 +113,7 @@ class SWE_Team:
             """
             write the code and ensuring that it meets the requirements.
             """
-            toolkit = [t.duckduckgo(), t.shell(), *t.file_management_tools()]
+            toolkit = [t.duckduckgo(), t.shell(), *t.file_management_tools(root_dir=str(self.workdir))]
             agent = Agent(self.model, toolkit, self.memory, self.config)
             res = agent.invoke({"messages": state["messages"]})
             return {"messages": res["messages"]}
@@ -103,7 +127,7 @@ class SWE_Team:
             """
             review the code and ensuring that it meets the requirements.
             """
-            toolkit = [t.duckduckgo(), *t.file_management_tools(), t.shell()]
+            toolkit = [t.duckduckgo(), *t.file_management_tools(root_dir=str(self.workdir)), t.shell()]
             agent = Agent(self.model, toolkit, self.memory, self.config)
             res = agent.invoke({"messages": state["messages"]})
             return {"messages": res["messages"]}
@@ -117,7 +141,14 @@ class SWE_Team:
             """
             test the code and ensuring that it meets the requirements.
             """
-            toolkit = [t.tavily(), t.duckduckgo(), t.serper(), t.shell(), *t.file_management_tools(), t.python_repl()]
+            toolkit = [
+                t.tavily(),
+                t.duckduckgo(),
+                t.serper(),
+                t.shell(),
+                *t.file_management_tools(root_dir=str(self.workdir)),
+                t.python_repl(),
+            ]
             agent = Agent(self.model, toolkit, self.memory, self.config)
             res = agent.invoke({"messages": state["messages"]})
             return {"messages": res["messages"]}
@@ -133,7 +164,7 @@ class SWE_Team:
 
         return should_continue
 
-    async def start_interactive_chat(self) -> None:
+    async def start_interactive_chat(self, stream_mode="messages") -> None:
         try:
             while True:
                 user_input = input("user: ")
@@ -141,8 +172,15 @@ class SWE_Team:
                     print("quitting...")
                     return
                 print()
-                async for i in self.graph.astream({"messages": [user_input]}, config=self.config, stream_mode="messages"):
-                    print(i[0].content, end="")
+                async for i in self.graph.astream({"messages": [user_input]}, config=self.config, stream_mode=stream_mode):
+                    match stream_mode:
+                        case "messages":
+                            print(i[0].content, end="")
+                        case "debug":
+                            pprint(i)
+                        case "_":
+                            raise ValueError(f"unknown stream mode: {stream_mode}")
+
                 print("\n\n")
         except Exception as e:
             print(f"error: {e}", file=sys.stderr)
