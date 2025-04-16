@@ -30,11 +30,10 @@ def parse_args():
 
 async def main():
     args = parse_args()
-    config = {"configurable": {"thread_id": args.thread_id}}
     dev_team = SWE_Team(
-        create_model(args.model),
-        MemorySaver(),
-        config,
+        model=create_model(args.model),
+        memory=MemorySaver(),
+        config={"configurable": {"thread_id": args.thread_id}},
         workdir=args.workdir,
     )
     await dev_team.start_interactive_chat(stream_mode=args.stream_mode)
