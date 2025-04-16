@@ -12,7 +12,7 @@ from llm_experiments.agent import Agent, AgentBase
 nest_asyncio.apply()
 
 
-class SWE_Team(AgentBase):
+class SWETeam(AgentBase):
     def __init__(self, model, memory, config, workdir="output/swe"):
         self.model = model
         self.memory = memory

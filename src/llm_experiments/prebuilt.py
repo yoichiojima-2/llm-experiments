@@ -2,13 +2,13 @@ import nest_asyncio
 
 from llm_experiments import tools as t
 from llm_experiments.agent import Agent
-from llm_experiments.multiagents.swe import SWE_Team
+from llm_experiments.multiagents.swe import SWETeam
 
 nest_asyncio.apply()
 
 
 async def swe(model, memory, config, workdir="output/swe"):
-    return SWE_Team(
+    return SWETeam(
         model=model,
         memory=memory,
         config=config,
