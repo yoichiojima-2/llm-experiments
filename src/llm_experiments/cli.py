@@ -5,11 +5,14 @@ cli entrypoint
 import asyncio
 from argparse import ArgumentParser
 
+import nest_asyncio
 from langchain_community.tools.playwright.utils import create_async_playwright_browser
 from langgraph.checkpoint.memory import MemorySaver
 
 from llm_experiments import prebuilt
 from llm_experiments.llm import create_model
+
+nest_asyncio.apply()
 
 
 def parse_args():

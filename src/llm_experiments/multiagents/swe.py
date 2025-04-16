@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import nest_asyncio
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
 from langgraph.graph import END, START, MessagesState, StateGraph
@@ -8,8 +7,6 @@ from langgraph.prebuilt import ToolNode
 
 from llm_experiments import tools as t
 from llm_experiments.agent import Agent, AgentBase
-
-nest_asyncio.apply()
 
 
 class SWETeam(AgentBase):
