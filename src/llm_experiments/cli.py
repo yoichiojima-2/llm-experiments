@@ -10,7 +10,6 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from llm_experiments import prebuilt
 from llm_experiments.llm import create_model
-from llm_experiments.prebuilt import SWE_Team
 
 
 def parse_args():
@@ -34,13 +33,13 @@ async def main():
     config = {"configurable": {"thread_id": "default"}}
     match args.agent:
         case "swe":
-            dev_team = SWE_Team(model, memory, config, workdir="output/swe")
-            await dev_team.interactive_chat()
+            agent = await prebuilt.swe(model, memory, config, workdir="output/swe")
+            await agent.interactive_chat()
         case "search":
             agent = await prebuilt.search(model, memory, config)
             await agent.interactive_chat()
         case "shell":
-            agent= await prebuilt.shell(model, memory, config)
+            agent = await prebuilt.shell(model, memory, config)
             await agent.interactive_chat()
         case "shell_w_search":
             agent = await prebuilt.shell_w_search(model, memory, config)

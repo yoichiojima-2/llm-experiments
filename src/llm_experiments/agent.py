@@ -29,9 +29,7 @@ class AgentBase(ABC):
                     print("quitting...")
                     return
                 print()
-                async for i in self.graph.astream(
-                    {"messages": [user_input]}, config=self.config, stream_mode=stream_mode
-                ):
+                async for i in self.graph.astream({"messages": [user_input]}, config=self.config, stream_mode=stream_mode):
                     match stream_mode:
                         case "messages":
                             print(i[0].content, end="")
