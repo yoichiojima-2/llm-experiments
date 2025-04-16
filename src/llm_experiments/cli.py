@@ -1,12 +1,16 @@
+"""
+cli entrypoint
+"""
+
 import asyncio
 from argparse import ArgumentParser
 
 from langchain_community.tools.playwright.utils import create_async_playwright_browser
 from langgraph.checkpoint.memory import MemorySaver
 
-from llm_experiments import tools as t
-from llm_experiments.agent import Agent
+from llm_experiments import prebuilt
 from llm_experiments.llm import create_model
+from llm_experiments.prebuilt import SWE_Team
 
 
 def parse_args():
@@ -15,9 +19,10 @@ def parse_args():
     opt(
         "--agent",
         "-a",
-        choices=["search", "shell", "browser", "shell_w_search", "sql", "slack", "python-repl", "browser_w_search"],
+        choices=["search", "shell", "browser", "shell_w_search", "sql", "slack", "python-repl", "browser_w_search", "swe"],
         default="search",
     )
+    # i've never seen deepseek works with tools
     opt("--model", "-m", type=str, choices=["4o-mini", "o3-mini", "deepseek", "llama", "gemini"], default="4o-mini")
     return parser.parse_args()
 
@@ -28,114 +33,37 @@ async def main():
     memory = MemorySaver()
     config = {"configurable": {"thread_id": "default"}}
     match args.agent:
+        case "swe":
+            dev_team = SWE_Team(model, memory, config, workdir="output/swe")
+            await dev_team.interactive_chat()
         case "search":
-            await search(model, memory, config)
+            agent = await prebuilt.search(model, memory, config)
+            await agent.interactive_chat()
         case "shell":
-            await shell(model, memory, config)
-        case "browser":
-            await browser(model, memory, config)
+            agent= await prebuilt.shell(model, memory, config)
+            await agent.interactive_chat()
         case "shell_w_search":
-            await shell_w_search(model, memory, config)
+            agent = await prebuilt.shell_w_search(model, memory, config)
+            await agent.interactive_chat()
         case "sql":
-            await sql(model, memory, config)
+            agent = await prebuilt.sql(model, memory, config)
+            await agent.interactive_chat()
         case "slack":
-            await slack(model, memory, config)
+            agent = await prebuilt.slack(model, memory, config)
+            await agent.interactive_chat()
         case "python-repl":
-            await python_repl(model, memory, config)
+            agent = await prebuilt.python_repl(model, memory, config)
+            await agent.interactive_chat()
+        case "browser":
+            async with create_async_playwright_browser() as b:
+                agent = await prebuilt.browser(model, memory, config, b)
+                await agent.interactive_chat()
         case "browser_w_search":
-            await browser_w_search(model, memory, config)
+            async with create_async_playwright_browser() as b:
+                agent = await prebuilt.browser_w_search(model, memory, config, b)
+                await agent.interactive_chat()
         case _:
             raise ValueError(f"unknown agent: {args.agent}")
-
-
-async def search(model, memory, config):
-    agent = Agent(
-        model=model,
-        tools=[t.tavily(), t.duckduckgo(), t.serper(), t.wikipedia()],
-        memory=memory,
-        config=config,
-    )
-    await agent.start_interactive_chat()
-
-
-async def shell_w_search(model, memory, config):
-    agent = Agent(
-        model=model,
-        tools=[t.shell(ask_human_input=True), t.tavily(), t.duckduckgo(), t.serper()],
-        memory=memory,
-        config=config,
-    )
-    await agent.start_interactive_chat()
-
-
-async def shell(model, memory, config):
-    agent = Agent(
-        model=model,
-        tools=[t.shell(ask_human_input=True)],
-        memory=memory,
-        config=config,
-    )
-    await agent.start_interactive_chat()
-
-
-async def slack(model, memory, config):
-    agent = Agent(
-        model=model,
-        tools=t.slack_tools(),
-        memory=memory,
-        config=config,
-    )
-    await agent.start_interactive_chat()
-
-
-async def python_repl(model, memory, config):
-    agent = Agent(
-        model=model,
-        tools=[t.python_repl()],
-        memory=memory,
-        config=config,
-    )
-    await agent.start_interactive_chat()
-
-
-async def sql(model, memory, config):
-    agent = Agent(
-        model=model,
-        tools=[*t.sql_tools(model, "sql"), t.shell(), t.duckduckgo()],
-        memory=memory,
-        config=config,
-    )
-    await agent.start_interactive_chat()
-
-
-async def browser(model, memory, config):
-    import nest_asyncio
-
-    nest_asyncio.apply()
-    async with create_async_playwright_browser(headless=False) as async_browser:
-        toolkit = await t.browser_tools(async_browser)
-        agent = Agent(
-            model=model,
-            tools=toolkit,
-            memory=memory,
-            config=config,
-        )
-        await agent.start_interactive_chat()
-
-
-async def browser_w_search(model, memory, config):
-    import nest_asyncio
-
-    nest_asyncio.apply()
-    async with create_async_playwright_browser(headless=False) as async_browser:
-        browser_tools = await t.browser_tools(async_browser)
-        agent = Agent(
-            model=model,
-            tools=[*browser_tools, t.duckduckgo(), t.serper(), t.wikipedia(), t.tavily()],
-            memory=memory,
-            config=config,
-        )
-        await agent.start_interactive_chat()
 
 
 if __name__ == "__main__":

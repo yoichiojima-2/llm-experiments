@@ -1,10 +1,51 @@
 import sys
+from abc import ABC
+from dataclasses import dataclass
+from pprint import pprint
 
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.tools import BaseTool
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, MessagesState, StateGraph
+from langgraph.graph.graph import CompiledGraph
 from langgraph.prebuilt import ToolNode
 
 
-class Agent:
+@dataclass
+class AgentBase(ABC):
+    model: BaseChatModel
+    toosl: list[BaseTool]
+    memory: BaseCheckpointSaver
+    graph: CompiledGraph
+
+    def invoke(self, *a, **kw):
+        return self.graph.invoke(*a, **kw)
+
+    async def interactive_chat(self, stream_mode="messages"):
+        try:
+            while True:
+                user_input = input("user: ")
+                if user_input == "q":
+                    print("quitting...")
+                    return
+                print()
+                async for i in self.graph.astream(
+                    {"messages": [user_input]}, config=self.config, stream_mode=stream_mode
+                ):
+                    match stream_mode:
+                        case "messages":
+                            print(i[0].content, end="")
+                        case "debug":
+                            pprint(i)
+                        case _:
+                            raise ValueError(f"unknown stream mode: {stream_mode}")
+
+                print("\n\n")
+        except Exception as e:
+            print(f"error: {e}", file=sys.stderr)
+
+
+class Agent(AgentBase):
     def __init__(self, model, tools, memory, config):
         self.model = model
         self.tools = tools
@@ -41,20 +82,3 @@ class Agent:
             return END
 
         return should_continue
-
-    async def start_interactive_chat(self) -> None:
-        try:
-            while True:
-                user_input = input("user: ")
-                if user_input == "q":
-                    print("quitting...")
-                    return
-                print()
-                async for i in self.graph.astream({"messages": [user_input]}, config=self.config, stream_mode="messages"):
-                    print(i[0].content, end="")
-                print("\n\n")
-        except Exception as e:
-            print(f"error: {e}", file=sys.stderr)
-
-    def invoke(self, *a, **kw):
-        return self.graph.invoke(*a, **kw)

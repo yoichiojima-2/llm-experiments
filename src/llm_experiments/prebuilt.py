@@ -1,45 +1,18 @@
-"""
-this example demonstrates how to create a software engineering team
-"""
-
-import asyncio
-import sys
-from argparse import ArgumentParser
 from pathlib import Path
-from pprint import pprint
 
+import nest_asyncio
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 
 from llm_experiments import tools as t
-from llm_experiments.agent import Agent
-from llm_experiments.llm import create_model
+from llm_experiments.agent import Agent, AgentBase
+
+nest_asyncio.apply()
 
 
-def parse_args():
-    parser = ArgumentParser(description="SWE team example")
-    parser.add_argument("--workdir", "-w", type=str, default="output/swe")
-    parser.add_argument("--model", "-m", type=str, default="o3-mini")
-    parser.add_argument("--thread_id", "-t", type=str, default="swe")
-    parser.add_argument("--stream-mode", "-s", type=str, default="messages")
-    return parser.parse_args()
-
-
-async def main():
-    args = parse_args()
-    dev_team = SWE_Team(
-        model=create_model(args.model),
-        memory=MemorySaver(),
-        config={"configurable": {"thread_id": args.thread_id}},
-        workdir=args.workdir,
-    )
-    await dev_team.start_interactive_chat(stream_mode=args.stream_mode)
-
-
-class SWE_Team:
+class SWE_Team(AgentBase):
     def __init__(self, model, memory, config, workdir="output/swe"):
         self.model = model
         self.memory = memory
@@ -55,10 +28,9 @@ class SWE_Team:
             self.reviewer_node,
             self.tester_node,
             self.researcher_node,
-            *t.file_management_tools(root_dir=str(workdir)),
+            *t.file_management_tools(root_dir=str(self.workdir)),
             t.shell(),
         ]
-
         self.graph = self.compile_graph()
 
     def compile_graph(self):
@@ -182,27 +154,76 @@ class SWE_Team:
 
         return should_continue
 
-    async def start_interactive_chat(self, stream_mode="messages") -> None:
-        try:
-            while True:
-                user_input = input("user: ")
-                if user_input == "q":
-                    print("quitting...")
-                    return
-                print()
-                async for i in self.graph.astream({"messages": [user_input]}, config=self.config, stream_mode=stream_mode):
-                    match stream_mode:
-                        case "messages":
-                            print(i[0].content, end="")
-                        case "debug":
-                            pprint(i)
-                        case "_":
-                            raise ValueError(f"unknown stream mode: {stream_mode}")
 
-                print("\n\n")
-        except Exception as e:
-            print(f"error: {e}", file=sys.stderr)
+async def search(model, memory, config):
+    return Agent(
+        model=model,
+        tools=[t.tavily(), t.duckduckgo(), t.serper(), t.wikipedia()],
+        memory=memory,
+        config=config,
+    )
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+async def shell_w_search(model, memory, config):
+    return Agent(
+        model=model,
+        tools=[t.shell(ask_human_input=True), t.tavily(), t.duckduckgo(), t.serper()],
+        memory=memory,
+        config=config,
+    )
+
+
+async def shell(model, memory, config):
+    return Agent(
+        model=model,
+        tools=[t.shell(ask_human_input=True)],
+        memory=memory,
+        config=config,
+    )
+
+
+async def slack(model, memory, config):
+    return Agent(
+        model=model,
+        tools=t.slack_tools(),
+        memory=memory,
+        config=config,
+    )
+
+
+async def python_repl(model, memory, config):
+    return Agent(
+        model=model,
+        tools=[t.python_repl()],
+        memory=memory,
+        config=config,
+    )
+
+
+async def sql(model, memory, config):
+    return Agent(
+        model=model,
+        tools=[*t.sql_tools(model, "sql"), t.shell(), t.duckduckgo()],
+        memory=memory,
+        config=config,
+    )
+
+
+async def browser(model, memory, config, browser):
+    toolkit = await t.browser_tools(browser)
+    return Agent(
+        model=model,
+        tools=toolkit,
+        memory=memory,
+        config=config,
+    )
+
+
+async def browser_w_search(model, memory, config, browser):
+    browser_tools = await t.browser_tools(browser)
+    return Agent(
+        model=model,
+        tools=[*browser_tools, t.duckduckgo(), t.serper(), t.wikipedia(), t.tavily()],
+        memory=memory,
+        config=config,
+    )
