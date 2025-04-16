@@ -35,7 +35,7 @@ make install && source .env && source .venv/bin/activate
 
 to start working with the swe team, run:
 ```bash
-python examples/swe.py
+python -m llm_experiments --agent swe
 ```
 
 if you just want a simple agent, run:
