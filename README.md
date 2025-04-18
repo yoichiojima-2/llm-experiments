@@ -7,25 +7,21 @@ you need to run `ollama serve` to use `deepseek` and `llama`.
 place a `.env` file at the root of the repository as shown in the example below:
 
 ```bash
-# langsmith
-LANGSMITH_TRACING=***
-LANGSMITH_ENDPOINT=***
-LANGSMITH_API_KEY=***
-LANGSMITH_PROJECT=***
-# openapi
+# openai
 OPENAI_API_KEY=***
-# spotify
-SPOTIPY_CLIENT_ID=***
-SPOTIPY_CLIENT_SECRET=***
-SPOTIPY_REDIRECT_URI=***
+# google for gemini
+GOOGLE_API_KEY=***
 # serper
 SERPER_API_KEY=***
 # tavily
 TAVILY_API_KEY=***
-# google for gemini
-GOOGLE_API_KEY=***
 # slack
 SLACK_USER_TOKEN=***
+# langsmith (optional)
+LANGSMITH_TRACING=***
+LANGSMITH_ENDPOINT=***
+LANGSMITH_API_KEY=***
+LANGSMITH_PROJECT=***
 ```
 
 then run:
