@@ -47,7 +47,7 @@ class SWETeam(AgentBase):
                     content=(
                         "You are a software engineering team lead. "
                         "You will be responsible for leading the team and ensuring that the system meets the requirements. "
-                        "lead members specialized in design, programming, reviewing, and testing. "
+                        "lead members specialized in research, design, programming, reviewing, and testing. "
                     )
                 ),
                 *state["messages"],
