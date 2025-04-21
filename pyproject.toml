@@ -7,10 +7,12 @@ requires-python = ">=3.13"
 dependencies = [
     "bs4>=0.0.2",
     "duckduckgo-search>=7.5.1",
+    "fastmcp>=2.2.1",
     "langchain>=0.3.20",
     "langchain-community>=0.3.19",
     "langchain-experimental>=0.3.4",
     "langchain-google-genai>=2.1.2",
+    "langchain-mcp-adapters>=0.0.9",
     "langchain-openai>=0.3.8",
     "langchain-tavily>=0.1.5",
     "langgraph>=0.3.5",
