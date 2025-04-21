@@ -1,28 +1,28 @@
-import asyncio
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-from langchain_mcp_adapters.tools import load_mcp_tools
-from langchain.agents import create_react_agent
-
-from llm_experiments.llm import create_model
+import tomllib
+from pathlib import Path
+from fastmcp import Client
 
 
-async def main():
-    model = create_model()
-
-    server_params = StdioServerParameters(
-        command="python",
-        args=["-m", "llm_experiments.server"]
-    )
-
-    async with stdio_client(server_params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            tools = await load_mcp_tools(session)
-            agent = create_react_agent(model=model, tools=tools)
-            res = agent.ainvoke({"messages": "greet"})
-            print(res)
+APP_ROOT = Path(__file__).parent.parent
+SERVER_PATH = APP_ROOT / "src/llm_experiments/server.py"
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+async def test_server():
+    async with Client(str(SERVER_PATH)) as client:
+        await client.ping()
+
+        tools = await client.list_tools()
+        assert tools
+
+        res = await client.call_tool("test_tool")
+        assert res[0].text == "hello from tool"
+
+        resources = await client.list_resources()
+        assert resources
+
+        with (APP_ROOT / "pyproject.toml").open("rb") as f:
+            res = await client.read_resource("config://version")
+            assert tomllib.load(f)["project"]["version"] == res[0].text
+
+        prompts = await client.get_prompt("test_prompt")
+        assert prompts
