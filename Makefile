@@ -1,6 +1,7 @@
 install:
 	uv sync
 	uv pip install -e .
+	.venv/bin/playwright install
 
 clean:
 	-rm .DS_Store
