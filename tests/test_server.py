@@ -25,4 +25,4 @@ async def test_server():
             assert tomllib.load(f)["project"]["version"] == res[0].text
 
         prompts = await client.get_prompt("test_prompt")
-        assert prompts
+        assert prompts[0].content.text == "hello from prompt"
