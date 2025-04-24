@@ -25,7 +25,7 @@ def parse_args():
         default="search",
     )
     # i've never seen deepseek works with tools
-    opt("--model", "-m", type=str, choices=["4o-mini", "o3-mini", "deepseek", "llama", "gemini"], default="4o-mini")
+    opt("--model", "-m", type=str, choices=["4o-mini", "o3-mini", "deepseek", "llama", "gemini"], default="o3-mini")
     return parser.parse_args()
 
 
