@@ -36,7 +36,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
+          # upload swe team's sample output
           path: 'output/swe'
       - name: Deploy to GitHub Pages
         id: deployment
