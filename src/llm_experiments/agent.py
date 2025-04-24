@@ -1,5 +1,4 @@
 import sys
-from abc import ABC
 from dataclasses import dataclass
 from pprint import pprint
 
@@ -12,7 +11,7 @@ from langgraph.prebuilt import ToolNode
 
 
 @dataclass
-class AgentBase(ABC):
+class AgentBase:
     model: BaseChatModel
     toosl: list[BaseTool]
     memory: BaseCheckpointSaver
