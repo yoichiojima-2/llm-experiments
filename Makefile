@@ -8,6 +8,7 @@ clean:
 	find . -name "*.ipynb" -type f -exec uv run jupyter nbconvert --clear-output {} +
 	find . -name .venv -type d -exec rm -rf {} +
 	find . -name __pycache__ -type d -exec rm -rf {} +
+	find . -name .vscode -type d -exec rm -rf {} +
 	find . -name .pytest_cache -type d -exec rm -rf {} +
 	find . -name .ruff_cache -type d -exec rm -rf {} +
 	find . -name .mypy_cache -type d -exec rm -rf {} +

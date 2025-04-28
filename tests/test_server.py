@@ -1,7 +1,7 @@
 import tomllib
 from pathlib import Path
-from fastmcp import Client
 
+from fastmcp import Client
 
 APP_ROOT = Path(__file__).parent.parent
 SERVER_PATH = APP_ROOT / "src/llm_experiments/server.py"

@@ -1,7 +1,7 @@
 import tomllib
 from pathlib import Path
-from fastmcp import FastMCP
 
+from fastmcp import FastMCP
 
 mcp = FastMCP("llm-experiments")
 
