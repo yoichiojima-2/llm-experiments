@@ -1,6 +1,7 @@
 import sys
 from dataclasses import dataclass
 from pprint import pprint
+from abc import ABC
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.tools import BaseTool
@@ -11,7 +12,7 @@ from langgraph.prebuilt import ToolNode
 
 
 @dataclass
-class AgentBase:
+class AgentBase(ABC):
     model: BaseChatModel
     toosl: list[BaseTool]
     memory: BaseCheckpointSaver
