@@ -2,14 +2,15 @@ import os
 
 import slack_sdk
 from langchain_core.tools import tool
+from langchain_core.tools.base import BaseTool
+from langchain_core.tools.base import BaseToolkit
 
 
-class SlackTools:
+class SlackToolkit(BaseToolkit):
     def __init__(self):
         self.client = slack_sdk.WebClient(token=os.getenv("SLACK_USER_TOKEN"))
 
-    @property
-    def tools(self):
+    def get_tools(self) -> list[BaseTool]:
         @tool
         def post_message(channel: str, text: str):
             """post a message to a Slack channel."""
