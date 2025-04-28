@@ -11,27 +11,22 @@ from langchain_experimental.utilities import PythonREPL
 from langchain_tavily import TavilySearch
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
+from langchain_core.tools.base import BaseTool
 
-from llm_experiments.custom_tools.slack import SlackTools
+from llm_experiments.custom_tools.slack import SlackToolkit
 
 
-def duckduckgo():
+
+# singuler tools
+def duckduckgo() -> BaseTool:
     return DuckDuckGoSearchRun()
 
 
-def shell(*a, **kw):
+def shell(*a, **kw) -> BaseTool:
     return ShellTool(*a, **kw)
 
 
-async def browser_tools(browser):
-    return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
-
-
-def slack_tools():
-    return SlackTools().tools
-
-
-def python_repl():
+def python_repl() -> BaseTool:
     @tool
     def python_repl_tool(script):
         """python repr run"""
@@ -40,15 +35,11 @@ def python_repl():
     return python_repl_tool
 
 
-def wikipedia():
+def wikipedia() -> BaseTool:
     return WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
 
 
-def file_management_tools(*a, **kw):
-    return FileManagementToolkit(*a, **kw).get_tools()
-
-
-def serper():
+def serper() -> BaseTool:
     @tool
     def serper_tool(query):
         """serper search"""
@@ -57,11 +48,24 @@ def serper():
     return serper_tool
 
 
-def tavily():
+def tavily() -> BaseTool:
     return TavilySearch(max_results=5)
 
 
-def sql_tools(model, db_name):
+# toolkits
+async def browser_tools(browser) -> list[BaseTool]:
+    return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
+
+
+def slack_tools() -> list[BaseTool]:
+    return SlackToolkit().get_tools()
+
+
+def file_management_tools(*a, **kw) -> list[BaseTool]:
+    return FileManagementToolkit(*a, **kw).get_tools()
+
+
+def sql_tools(model, db_name) -> BaseTool:
     db_dir = Path(__file__).parent.parent.parent / "db"
     path = db_dir / f"{db_name}.db"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -76,5 +80,6 @@ def sql_tools(model, db_name):
     return SQLDatabaseToolkit(db=db, llm=model).get_tools()
 
 
-def make_tools_by_name(tools):
+# utils
+def make_tools_by_name(tools) -> dict[str, BaseTool]:
     return {tool.name: tool for tool in tools}
