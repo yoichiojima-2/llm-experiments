@@ -1,15 +1,21 @@
+import nest_asyncio
 from langchain_community.tools.playwright.utils import create_async_playwright_browser
+from langchain_core.tools.base import BaseToolkit
 from langgraph.prebuilt import create_react_agent
 
 from llm_experiments import tools
-from llm_experiments.custom_tools.slack import SlackTools
+from llm_experiments.custom_tools.slack import SlackToolkit
 from llm_experiments.llm import create_model
 from llm_experiments.tools import make_tools_by_name
 
+nest_asyncio.apply()
+
 
 def test_slack_tools():
-    slack_tools = SlackTools()
-    tool_by_name = make_tools_by_name(slack_tools.tools)
+    slack_toolkit = SlackToolkit()
+    assert isinstance(slack_toolkit, BaseToolkit)
+    slack_tools = slack_toolkit.get_tools()
+    tool_by_name = make_tools_by_name(slack_tools)
     res = tool_by_name["post_message"].invoke({"channel": "test", "text": "hello from agent"})
     assert res["ok"]
     res = tool_by_name["delete_message"].invoke({"channel": res["channel"], "ts": res["ts"]})
@@ -25,9 +31,6 @@ def test_duckduckgo_tools():
 
 
 async def test_browser():
-    import nest_asyncio
-
-    nest_asyncio.apply()
     async with create_async_playwright_browser() as async_browser:
         toolkit = await tools.browser_tools(async_browser)
         agent = create_react_agent(create_model(), toolkit)
