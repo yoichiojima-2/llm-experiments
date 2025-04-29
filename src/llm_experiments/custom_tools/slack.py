@@ -2,13 +2,13 @@ import os
 
 import slack_sdk
 from langchain_core.tools import tool
-from langchain_core.tools.base import BaseTool
-from langchain_core.tools.base import BaseToolkit
+from langchain_core.tools.base import BaseTool, BaseToolkit
 
 
 class SlackToolkit(BaseToolkit):
-    def __init__(self):
-        self.client = slack_sdk.WebClient(token=os.getenv("SLACK_USER_TOKEN"))
+    @property
+    def client(self):
+        return slack_sdk.WebClient(token=os.getenv("SLACK_USER_TOKEN"))
 
     def get_tools(self) -> list[BaseTool]:
         @tool
