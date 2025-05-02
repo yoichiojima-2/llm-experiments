@@ -6,12 +6,8 @@ from llm_experiments.llm import create_model
 
 
 def test_agent():
-    model = create_model()
-    toolkits = tools.Tavily()
-    memory = MemorySaver()
     config = {"configurable": {"thread_id": "test-agent"}}
-
-    agent = Agent(model=model, toolkits=[toolkits], memory=memory, config=config)
+    agent = Agent(model=create_model(), tools=tools.Tavily().get_tools(), memory=MemorySaver(), config=config)
     res = agent.invoke({"messages": ["search today's news"]}, config=config)
     print(res["messages"][-1].content)
     assert res

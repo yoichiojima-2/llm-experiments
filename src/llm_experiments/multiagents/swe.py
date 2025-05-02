@@ -25,8 +25,8 @@ class SWETeam(AgentBase):
             self.reviewer_node,
             self.tester_node,
             self.researcher_node,
-            *t.file_management_tools(root_dir=str(self.workdir)),
-            t.shell(),
+            *t.FileManagement().get_tools(root_dir=str(self.workdir)),
+            *t.Shell().get_tools(),
         ]
         self.graph = self.compile_graph()
 

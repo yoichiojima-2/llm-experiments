@@ -15,20 +15,11 @@ async def swe(model, memory, config, workdir="output/swe"):
 async def search(model, memory, config):
     return Agent(
         model=model,
-        tools=[t.Tavily(), t.DuckDuckGo(), t.Serper(), t.Wikipedia()],
-        memory=memory,
-        config=config,
-    )
-
-
-async def shell_w_search(model, memory, config):
-    return Agent(
-        model=model,
         tools=[
-            t.Shell(ask_human_input=True),
-            t.Tavily(),
-            t.DuckDuckGo(),
-            t.Serper(),
+            *t.Tavily().get_tools(),
+            *t.DuckDuckGo().get_tools(),
+            *t.Serper().get_tools(),
+            *t.Wikipedia().get_tools(),
         ],
         memory=memory,
         config=config,
@@ -38,7 +29,21 @@ async def shell_w_search(model, memory, config):
 async def shell(model, memory, config):
     return Agent(
         model=model,
-        tools=[t.Shell(ask_human_input=True)],
+        tools=t.Shell().get_tools(ask_human_input=True),
+        memory=memory,
+        config=config,
+    )
+
+
+async def shell_w_search(model, memory, config):
+    return Agent(
+        model=model,
+        tools=[
+            *t.Shell().get_tools(ask_human_input=True),
+            *t.Tavily().get_tools(),
+            *t.DuckDuckGo().get_tools(),
+            *t.Serper().get_tools(),
+        ],
         memory=memory,
         config=config,
     )
@@ -47,7 +52,7 @@ async def shell(model, memory, config):
 async def slack(model, memory, config):
     return Agent(
         model=model,
-        tools=t.Slack(),
+        tools=t.Slack().get_tools(),
         memory=memory,
         config=config,
     )
@@ -56,7 +61,7 @@ async def slack(model, memory, config):
 async def python_repl(model, memory, config):
     return Agent(
         model=model,
-        tools=[t.Python_()],
+        tools=t.Python_().get_tools(),
         memory=memory,
         config=config,
     )
@@ -65,27 +70,31 @@ async def python_repl(model, memory, config):
 async def sql(model, memory, config):
     return Agent(
         model=model,
-        tools=[*t.SQL(model, "sql"), t.Shell(), t.DuckDuckGo()],
+        tools=[*t.SQL().get_tools(model, "sql"), t.Shell().get_tools(), t.DuckDuckGo().get_tools()],
         memory=memory,
         config=config,
     )
 
 
 async def browser(model, memory, config, browser):
-    toolkit = await t.Browser(browser)
     return Agent(
         model=model,
-        tools=toolkit,
+        tools=t.Browser(browser).get_tools(),
         memory=memory,
         config=config,
     )
 
 
 async def browser_w_search(model, memory, config, browser):
-    browser_tools = await t.browser_tools(browser)
     return Agent(
         model=model,
-        tools=[*browser_tools, t.duckduckgo(), t.serper(), t.wikipedia(), t.tavily()],
+        tools=[
+            *t.Browser(browser).get_tools(),
+            *t.DuckDuckGo().get_tools(),
+            *t.Serper().get_tools(),
+            *t.Wikipedia().get_tools(),
+            *t.Tavily().get_tools(),
+        ],
         memory=memory,
         config=config,
     )

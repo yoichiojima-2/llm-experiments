@@ -10,22 +10,13 @@ from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.graph.graph import CompiledGraph
 from langgraph.prebuilt import ToolNode
 
-from llm_experiments.tools import Tools
-
 
 @dataclass
 class AgentBase(ABC):
     model: BaseChatModel
-    toolkits: list[Tools]
+    tools: list[BaseTool]
     memory: BaseCheckpointSaver
     graph: CompiledGraph
-
-    def get_tools(self) -> list[BaseTool]:
-        tools = []
-        for toolkit in self.toolkits:
-            for tool in toolkit.get_tools():
-                tools.append(tool)
-        return tools
 
     def invoke(self, *a, **kw):
         return self.graph.invoke(*a, **kw)
@@ -52,9 +43,9 @@ class AgentBase(ABC):
 
 
 class Agent(AgentBase):
-    def __init__(self, model, toolkits, memory, config):
+    def __init__(self, model, tools, memory, config):
         self.model = model
-        self.toolkits = toolkits
+        self.tools = tools
         self.memory = memory
         self.config = config
         self.graph = self.compile_graph()
@@ -71,14 +62,14 @@ class Agent(AgentBase):
     @property
     def agent_node(self):
         def agent(state: MessagesState):
-            res = self.model.bind_tools(self.get_tools()).invoke(state["messages"])
+            res = self.model.bind_tools(self.tools).invoke(state["messages"])
             return {"messages": [res]}
 
         return agent
 
     @property
     def tools_node(self):
-        return ToolNode(self.get_tools())
+        return ToolNode(self.tools)
 
     @property
     def branch_node(self):
