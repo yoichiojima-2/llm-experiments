@@ -1,7 +1,7 @@
 import os
 import sqlite3
-from pathlib import Path
 from abc import ABC
+from pathlib import Path
 
 import slack_sdk
 from langchain_community.agent_toolkits import FileManagementToolkit, PlayWrightBrowserToolkit
@@ -20,7 +20,7 @@ from sqlalchemy.pool import StaticPool
 class Tools(BaseToolkit, ABC):
     def get_tools_by_name(self) -> dict[str, BaseTool]:
         return {tool.name: tool for tool in self.get_tools()}
-    
+
 
 class Slack(Tools):
     @property
