@@ -1,29 +1,35 @@
+import sys
 from fastmcp import FastMCP
+from langchain_core.tools.base import BaseTool
+from langgraph.checkpoint.memory import MemorySaver
 
-from llm_experiments import tools as t
-
-
-def main():
-    tools = [t.DuckDuckGo(), t.Shell(), t.Python_(), t.Wikipedia(), t.Serper(), t.Slack()]
-    tags = ["llm_experiments"]
-    server = MCPServer(tools=tools, tags=tags)
-    server.serve()
+from llm_experiments import prebuilt
+from llm_experiments.llm import create_model
 
 
 class MCPServer:
-    def __init__(self, tools: list[t.Tools], tags: list[str] = None):
-        self.mcp = FastMCP("llm_experiments")
+    def __init__(self, name: str, tools: list[BaseTool], tags: list[str] = []):
+        self.mcp = FastMCP(name)
         self.tools = tools
-        self.tags = tags
+        self.tags = [name, *tags]
         self.build()
 
     def build(self) -> FastMCP:
-        for tools in self.tools:
-            for tool in tools.get_tools():
+        for tool in self.tools:
+            try:
                 self.mcp.add_tool(tool.func, name=tool.name, description=tool.description, tags=self.tags)
+            except Exception as e:
+                print(file=sys.stderr)
+                print(tool)
 
     def serve(self):
         self.mcp.run()
+
+
+def main():
+    swe = prebuilt.SWETeam(model=create_model(), memory=MemorySaver(), config={"configurable": {"thread_id": "mcp"}})
+    swe = MCPServer(name="swe", tools=swe.tools)
+    swe.serve()
 
 
 if __name__ == "__main__":

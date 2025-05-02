@@ -13,6 +13,7 @@ from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.tools import tool
 from langchain_core.tools.base import BaseTool
+from langchain_core.tools.structured import StructuredTool
 from langchain_experimental.utilities import PythonREPL
 from langchain_tavily import TavilySearch
 from sqlalchemy import create_engine
@@ -99,12 +100,15 @@ class Browser(Tools):
         self.browser = browser
 
     def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return PlayWrightBrowserToolkit.from_browser(async_browser=self.browser, *a, **kw).get_tools()
+        return [
+            _tool_to_structured_tool(i)
+            for i in PlayWrightBrowserToolkit.from_browser(async_browser=self.browser, *a, **kw).get_tools()
+        ]
 
 
 class FileManagement(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return FileManagementToolkit(*a, **kw).get_tools()
+        return [_tool_to_structured_tool(i) for i in FileManagementToolkit(*a, **kw).get_tools()]
 
 
 class SQL(Tools):
@@ -126,7 +130,7 @@ class SQL(Tools):
         return SQLDatabase(engine)
 
     def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return SQLDatabaseToolkit(llm=self.llm, db=self.db, *a, **kw).get_tools()
+        return [_tool_to_structured_tool(i) for i in SQLDatabaseToolkit(llm=self.llm, db=self.db, *a, **kw).get_tools()]
 
 
 class Slack(Tools):
@@ -233,3 +237,7 @@ class Slack(Tools):
             join_conversation,
             leave_conversation,
         ]
+
+
+def _tool_to_structured_tool(tool: BaseTool) -> StructuredTool:
+    return StructuredTool(description=tool.description, name=tool.name, func=tool._run, args_schema=tool.args_schema)
