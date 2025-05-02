@@ -30,7 +30,7 @@ class AgentBase(ABC):
     def invoke(self, *a, **kw):
         return self.graph.invoke(*a, **kw)
 
-    async def interactive_chat(self, stream_mode="messages"):
+    async def interactive_chat(self, stream_mode="messages") -> None:
         try:
             while True:
                 user_input = input("user: ")
