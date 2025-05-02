@@ -25,8 +25,8 @@ class SWETeam(AgentBase):
             self.reviewer_node,
             self.tester_node,
             self.researcher_node,
-            *t.file_management_tools(root_dir=str(self.workdir)),
-            t.shell(),
+            *t.FileManagement().get_tools(root_dir=str(self.workdir)),
+            *t.Shell().get_tools(),
         ]
         self.graph = self.compile_graph()
 
@@ -66,7 +66,7 @@ class SWETeam(AgentBase):
             """
             agent = Agent(
                 self.model,
-                [t.tavily(), t.duckduckgo(), t.serper()],
+                [t.Tavily(), t.DuckDuckGo(), t.Serper()],
                 self.memory,
                 self.config,
             )
@@ -84,7 +84,7 @@ class SWETeam(AgentBase):
             """
             agent = Agent(
                 self.model,
-                [t.tavily(), t.duckduckgo(), t.serper(), *t.file_management_tools(root_dir=str(self.workdir))],
+                [t.Tavily(), t.DuckDuckGo(), t.Serper(), *t.FileManagement(root_dir=str(self.workdir))],
                 self.memory,
                 self.config,
             )
@@ -100,7 +100,7 @@ class SWETeam(AgentBase):
             """
             write the code and ensuring that it meets the requirements.
             """
-            toolkit = [t.duckduckgo(), t.shell(), *t.file_management_tools(root_dir=str(self.workdir))]
+            toolkit = [t.DuckDuckGo(), t.Shell(), *t.FileManagement(root_dir=str(self.workdir))]
             agent = Agent(self.model, toolkit, self.memory, self.config)
             res = agent.invoke({"messages": state["messages"]})
             return {"messages": res["messages"]}
@@ -114,7 +114,7 @@ class SWETeam(AgentBase):
             """
             review the code and ensuring that it meets the requirements.
             """
-            toolkit = [t.duckduckgo(), *t.file_management_tools(root_dir=str(self.workdir)), t.shell()]
+            toolkit = [t.DuckDuckGo(), *t.FileManagement(root_dir=str(self.workdir)), t.Shell()]
             agent = Agent(self.model, toolkit, self.memory, self.config)
             res = agent.invoke({"messages": state["messages"]})
             return {"messages": res["messages"]}
@@ -129,12 +129,12 @@ class SWETeam(AgentBase):
             test the code and ensuring that it meets the requirements.
             """
             toolkit = [
-                t.tavily(),
-                t.duckduckgo(),
-                t.serper(),
-                t.shell(),
-                *t.file_management_tools(root_dir=str(self.workdir)),
-                t.python_repl(),
+                t.Tavily(),
+                t.DuckDuckGo(),
+                t.Serper(),
+                t.Shell(),
+                *t.FileManagement(root_dir=str(self.workdir)),
+                t.Python_(),
             ]
             agent = Agent(self.model, toolkit, self.memory, self.config)
             res = agent.invoke({"messages": state["messages"]})

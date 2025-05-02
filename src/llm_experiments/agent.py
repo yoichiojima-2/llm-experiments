@@ -1,7 +1,7 @@
 import sys
+from abc import ABC
 from dataclasses import dataclass
 from pprint import pprint
-from abc import ABC
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.tools import BaseTool
@@ -14,14 +14,14 @@ from langgraph.prebuilt import ToolNode
 @dataclass
 class AgentBase(ABC):
     model: BaseChatModel
-    toosl: list[BaseTool]
+    tools: list[BaseTool]
     memory: BaseCheckpointSaver
     graph: CompiledGraph
 
     def invoke(self, *a, **kw):
         return self.graph.invoke(*a, **kw)
 
-    async def interactive_chat(self, stream_mode="messages"):
+    async def interactive_chat(self, stream_mode="messages") -> None:
         try:
             while True:
                 user_input = input("user: ")
@@ -37,7 +37,6 @@ class AgentBase(ABC):
                             pprint(i)
                         case _:
                             raise ValueError(f"unknown stream mode: {stream_mode}")
-
                 print("\n\n")
         except Exception as e:
             print(f"error: {e}", file=sys.stderr)
