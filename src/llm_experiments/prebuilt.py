@@ -15,7 +15,7 @@ async def swe(model, memory, config, workdir="output/swe"):
 async def search(model, memory, config):
     return Agent(
         model=model,
-        tools=[t.tavily(), t.duckduckgo(), t.serper(), t.wikipedia()],
+        tools=[t.Tavily(), t.DuckDuckGo(), t.Serper(), t.Wikipedia()],
         memory=memory,
         config=config,
     )
@@ -24,7 +24,12 @@ async def search(model, memory, config):
 async def shell_w_search(model, memory, config):
     return Agent(
         model=model,
-        tools=[t.shell(ask_human_input=True), t.tavily(), t.duckduckgo(), t.serper()],
+        tools=[
+            t.Shell(ask_human_input=True),
+            t.Tavily(),
+            t.DuckDuckGo(),
+            t.Serper(),
+        ],
         memory=memory,
         config=config,
     )
@@ -33,7 +38,7 @@ async def shell_w_search(model, memory, config):
 async def shell(model, memory, config):
     return Agent(
         model=model,
-        tools=[t.shell(ask_human_input=True)],
+        tools=[t.Shell(ask_human_input=True)],
         memory=memory,
         config=config,
     )
@@ -42,7 +47,7 @@ async def shell(model, memory, config):
 async def slack(model, memory, config):
     return Agent(
         model=model,
-        tools=t.slack_tools(),
+        tools=t.Slack(),
         memory=memory,
         config=config,
     )
@@ -51,7 +56,7 @@ async def slack(model, memory, config):
 async def python_repl(model, memory, config):
     return Agent(
         model=model,
-        tools=[t.python_repl()],
+        tools=[t.Python_()],
         memory=memory,
         config=config,
     )
@@ -60,14 +65,14 @@ async def python_repl(model, memory, config):
 async def sql(model, memory, config):
     return Agent(
         model=model,
-        tools=[*t.sql_tools(model, "sql"), t.shell(), t.duckduckgo()],
+        tools=[*t.SQL(model, "sql"), t.Shell(), t.DuckDuckGo()],
         memory=memory,
         config=config,
     )
 
 
 async def browser(model, memory, config, browser):
-    toolkit = await t.browser_tools(browser)
+    toolkit = await t.Browser(browser)
     return Agent(
         model=model,
         tools=toolkit,
