@@ -3,12 +3,10 @@ from fastmcp import FastMCP
 from llm_experiments import tools as t
 
 
-TOOLS = [t.DuckDuckGo(), t.Shell(), t.Python_(), t.Wikipedia()]
-TAGS = ["llm_experiments"]
-
-
 def main():
-    server = MCPServer(tools=TOOLS, tags=TAGS)
+    tools = [t.DuckDuckGo(), t.Shell(), t.Python_(), t.Wikipedia(), t.Serper(), t.Slack()]
+    tags = ["llm_experiments"]
+    server = MCPServer(tools=tools, tags=tags)
     server.serve()
 
 
