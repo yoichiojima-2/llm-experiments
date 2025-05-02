@@ -169,7 +169,7 @@ class Tavily(Tools):
 
 
 class Browser(Tools):
-    async def get_tools(self, browser) -> list[BaseTool]:
+    def get_tools(self, browser) -> list[BaseTool]:
         return PlayWrightBrowserToolkit.from_browser(async_browser=browser).get_tools()
 
 
