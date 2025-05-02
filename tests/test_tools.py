@@ -28,7 +28,7 @@ def test_duckduckgo_tools():
 
 async def test_browser():
     async with create_async_playwright_browser() as async_browser:
-        toolkit = await tools.Browser().get_tools(async_browser)
+        toolkit = tools.Browser().get_tools(async_browser)
         agent = create_react_agent(create_model(), toolkit)
         res = agent.invoke({"messages": "go to wikipedia.org"})
         last_msg = res["messages"][-1].content
