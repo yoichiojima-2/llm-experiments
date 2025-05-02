@@ -29,12 +29,22 @@ class Tools(ABC):
 
 class DuckDuckGo(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return [DuckDuckGoSearchRun(*a, **kw)]
+        @tool
+        def duckduckgo_tool(query):
+            """DuckDuckGo search"""
+            return DuckDuckGoSearchRun(*a, **kw).run(query)
+
+        return [duckduckgo_tool]
 
 
 class Shell(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return [ShellTool(*a, **kw)]
+        @tool
+        def shell_tool(command):
+            """shell command run"""
+            return ShellTool(*a, **kw).run(command)
+
+        return [shell_tool]
 
 
 class Python_(Tools):
@@ -53,7 +63,12 @@ class Wikipedia(Tools):
         return WikipediaAPIWrapper()
 
     def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return [WikipediaQueryRun(api_wrapper=self.api_wrapper, *a, **kw)]
+        @tool
+        def wikipedia_tool(query):
+            """wikipedia search"""
+            return WikipediaQueryRun(api_wrapper=self.api_wrapper, *a, **kw).run(query)
+
+        return [wikipedia_tool]
 
 
 class Serper(Tools):
@@ -71,7 +86,12 @@ class Tavily(Tools):
     max_results: int = 5
 
     def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return [TavilySearch(max_results=self.max_results, *a, **kw)]
+        @tool
+        def tavily_tool(query):
+            """tavily search"""
+            return TavilySearch(max_results=self.max_results, *a, **kw).run(query)
+
+        return [tavily_tool]
 
 
 class Browser(Tools):
