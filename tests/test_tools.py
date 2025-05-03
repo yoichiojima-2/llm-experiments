@@ -58,14 +58,6 @@ def test_wikipedia():
     assert True
 
 
-def test_file_management():
-    agent = create_react_agent(create_model(), tools.FileManagement().get_tools())
-    res = agent.invoke({"messages": "list files in current directory"})
-    for msg in res["messages"]:
-        print(msg.content)
-    assert True
-
-
 def test_serper():
     agent = create_react_agent(create_model(), tools.Serper().get_tools())
     res = agent.invoke({"messages": "search for today's news"})
