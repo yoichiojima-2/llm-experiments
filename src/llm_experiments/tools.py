@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import slack_sdk
-from langchain_community.agent_toolkits import FileManagementToolkit, PlayWrightBrowserToolkit
+from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain_community.tools import DuckDuckGoSearchRun, ShellTool, WikipediaQueryRun
 from langchain_community.utilities import GoogleSerperAPIWrapper, WikipediaAPIWrapper
@@ -20,12 +20,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
 
+def tools_by_name(tools: list[BaseTool]) -> dict[str, BaseTool]:
+    return {tool.name: tool for tool in tools}
+
+
 class Tools(ABC):
     @abstractmethod
     def get_tools(self) -> list[BaseTool]: ...
 
     def get_tools_by_name(self) -> dict[str, BaseTool]:
-        return {tool.name: tool for tool in self.get_tools()}
+        return tools_by_name(self.get_tools())
 
 
 class DuckDuckGo(Tools):
@@ -104,11 +108,6 @@ class Browser(Tools):
             _tool_to_structured_tool(i)
             for i in PlayWrightBrowserToolkit.from_browser(async_browser=self.browser, *a, **kw).get_tools()
         ]
-
-
-class FileManagement(Tools):
-    def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return [_tool_to_structured_tool(i) for i in FileManagementToolkit(*a, **kw).get_tools()]
 
 
 class SQL(Tools):
