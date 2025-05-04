@@ -26,11 +26,6 @@ class MCPServer:
         self.mcp.mount(server.name, server.mcp)
 
 
-def build_swe() -> MCPServer:
-    swe_agent = prebuilt.SWETeam(model=create_model(), memory=MemorySaver(), config={"configurable": {"thread_id": "mcp"}})
-    return MCPServer(name="swe", tools=swe_agent.tools)
-
-
 def build_dev() -> MCPServer:
     return MCPServer(name="dev", tools=[*t.Shell().get_tools(), *t.Python_().get_tools()], tags=["dev"])
 
@@ -52,15 +47,10 @@ def build_slack() -> MCPServer:
     return MCPServer(name="slack", tools=[*t.Slack().get_tools()], tags=["slack"])
 
 
-# fixme
-# def build_sql(llm: BaseChatModel, db_name: str) -> MCPServer:
-#     return MCPServer(name="sql", tools=t.SQL(llm=llm, db_name=db_name).get_tools(), tags=["sql"])
-
-
 def main():
     main = MCPServer("llm_experiments")
 
-    children = [build_swe(), build_dev(), build_research(), build_slack()]
+    children = [build_dev(), build_research(), build_slack()]
     for child in children:
         main.mount(child)
 
