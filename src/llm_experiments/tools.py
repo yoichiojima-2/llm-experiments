@@ -233,6 +233,6 @@ class Slack(Tools):
 def base_to_structured(tool: BaseTool) -> StructuredTool:
     return StructuredTool(description=tool.description, name=tool.name, func=tool._run, args_schema=tool.args_schema)
 
+
 def tools_by_name(tools: list[BaseTool]) -> dict[str, BaseTool]:
     return {tool.name: tool for tool in tools}
-
