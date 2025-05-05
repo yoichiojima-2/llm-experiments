@@ -20,10 +20,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
 
-def tools_by_name(tools: list[BaseTool]) -> dict[str, BaseTool]:
-    return {tool.name: tool for tool in tools}
-
-
 class Tools(ABC):
     @abstractmethod
     def get_tools(self) -> list[BaseTool]: ...
@@ -45,8 +41,8 @@ class DuckDuckGo(Tools):
 class Shell(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
-        def shell_tool(command):
-            """shell command run"""
+        def shell_tool(command: str):
+            """run shell command"""
             return ShellTool(*a, **kw).run(command)
 
         return [shell_tool]
@@ -56,22 +52,18 @@ class Python_(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
         def python_repl_tool(script):
-            """python repr run"""
+            """run python"""
             return PythonREPL(*a, **kw).run(script)
 
         return [python_repl_tool]
 
 
 class Wikipedia(Tools):
-    @property
-    def api_wrapper(self):
-        return WikipediaAPIWrapper()
-
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
         def wikipedia_tool(query):
-            """wikipedia search"""
-            return WikipediaQueryRun(api_wrapper=self.api_wrapper, *a, **kw).run(query)
+            """search for wikipedia"""
+            return WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper(), *a, **kw).run(query)
 
         return [wikipedia_tool]
 
@@ -80,7 +72,7 @@ class Serper(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
         def serper_tool(query):
-            """serper search"""
+            """search for serper"""
             return GoogleSerperAPIWrapper(*a, **kw).run(query)
 
         return [serper_tool]
@@ -93,7 +85,7 @@ class Tavily(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
         def tavily_tool(query):
-            """tavily search"""
+            """search for tavily"""
             return TavilySearch(max_results=self.max_results, *a, **kw).run(query)
 
         return [tavily_tool]
@@ -105,7 +97,7 @@ class Browser(Tools):
 
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         return [
-            _tool_to_structured_tool(i)
+            base_to_structured(i)
             for i in PlayWrightBrowserToolkit.from_browser(async_browser=self.browser, *a, **kw).get_tools()
         ]
 
@@ -129,7 +121,7 @@ class SQL(Tools):
         return SQLDatabase(engine)
 
     def get_tools(self, *a, **kw) -> list[BaseTool]:
-        return [_tool_to_structured_tool(i) for i in SQLDatabaseToolkit(llm=self.llm, db=self.db, *a, **kw).get_tools()]
+        return [base_to_structured(i) for i in SQLDatabaseToolkit(llm=self.llm, db=self.db, *a, **kw).get_tools()]
 
 
 class Slack(Tools):
@@ -140,82 +132,82 @@ class Slack(Tools):
     def get_tools(self) -> list[BaseTool]:
         @tool
         def post_message(channel: str, text: str):
-            """post a message to a Slack channel."""
+            """post a message to a slack channel."""
             return self.client.chat_postMessage(channel=channel, text=text)
 
         @tool
         def delete_message(channel: str, ts: str):
-            """delete a message from a Slack channel."""
+            """delete a message from a slack channel."""
             return self.client.chat_delete(channel=channel, ts=ts)
 
         @tool
         def post_ephemeral(channel: str, text: str, user: str):
-            """post an ephemeral message to a Slack channel."""
+            """post an ephemeral message to a slack channel."""
             return self.client.chat_postEphemeral(channel=channel, text=text, user=user)
 
         @tool
         def update_message(channel: str, ts: str, text: str):
-            """update a message in a Slack channel."""
+            """update a message in a slack channel."""
             return self.client.chat_update(channel=channel, ts=ts, text=text)
 
         @tool
         def add_reaction(channel: str, emoji_name: str, ts: str):
-            """add a reaction to a message in a Slack channel."""
+            """add a reaction to a message in a slack channel."""
             return self.client.reactions_add(channel=channel, name=emoji_name, timestamp=ts)
 
         @tool
         def remove_reaction(channel: str, emoji_name: str, ts: str):
-            """remove a reaction from a message in a Slack channel."""
+            """remove a reaction from a message in a slack channel."""
             return self.client.reactions_remove(channel=channel, name=emoji_name, timestamp=ts)
 
         @tool
         def upload_file(channels: str, file: str):
-            """upload a file to a Slack channel."""
+            """upload a file to a slack channel."""
             return self.client.files_upload_v2(channels=channels, file=file)
 
         @tool
         def add_remote_file(channels: list[str], file: str):
-            """add a remote file to a Slack channel."""
+            """add a remote file to a slack channel."""
             return self.client.files_remote_add(channels=channels, file=file)
 
         @tool
         def list_conversations(limit: int = 100):
-            """list all conversations in Slack."""
+            """list all conversations in slack."""
             return self.client.conversations_list(limit=limit)
 
         @tool
         def get_conversation_history(channel: str):
-            """get the history of a conversation in Slack."""
+            """get the history of a conversation in slack."""
             return self.client.conversations_history(channel=channel)
 
         @tool
         def start_direct_message(users: list[str]):
-            """open a conversation in Slack."""
+            """open a conversation in slack."""
             return self.client.conversations_open(users=users)
 
         @tool
         def create_channel(name: str):
-            """create a new channel in Slack."""
+            """create a new channel in slack."""
             return self.client.conversations_archive(name=name)
 
         @tool
         def get_conversation_info(channel: str):
-            """get information about a conversation in Slack."""
+            """get information about a conversation in slack."""
             return self.client.conversations_info(channel=channel)
 
         @tool
         def get_members_of_conversation(channel: str):
-            """get members of a conversation in Slack."""
+            """get members of a conversation in slack."""
             return self.client.conversations_members(channel=channel)
 
         @tool
         def join_conversation(channel: str):
-            """join a conversation in Slack."""
+            """join a conversation in slack."""
             return self.client.conversations_join(channel=channel)
 
         @tool
         def leave_conversation(channel: str):
-            """leave a conversation in Slack."""
+            """leave a conversation in slack."""
             return self.client.conversations_leave(channel=channel)
 
         return [
@@ -238,5 +230,9 @@ class Slack(Tools):
         ]
 
 
-def _tool_to_structured_tool(tool: BaseTool) -> StructuredTool:
+def base_to_structured(tool: BaseTool) -> StructuredTool:
     return StructuredTool(description=tool.description, name=tool.name, func=tool._run, args_schema=tool.args_schema)
+
+
+def tools_by_name(tools: list[BaseTool]) -> dict[str, BaseTool]:
+    return {tool.name: tool for tool in tools}
