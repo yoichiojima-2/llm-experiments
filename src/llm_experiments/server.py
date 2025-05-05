@@ -42,7 +42,11 @@ def slack():
 
 def main():
     main = MCPServer("llm_experiments")
-    children = [dev(), research(), slack()]
+    children = [
+        dev(),
+        research(),
+        # slack()
+    ]
     for child in children:
         main.composite(child)
     main.run()
