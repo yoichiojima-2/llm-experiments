@@ -31,51 +31,51 @@ class Tools(ABC):
 class DuckDuckGo(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
-        def duckduckgo_tool(query):
+        def search_duckduckgo(query):
             """DuckDuckGo search"""
             return DuckDuckGoSearchRun(*a, **kw).run(query)
 
-        return [duckduckgo_tool]
+        return [search_duckduckgo]
 
 
 class Shell(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
-        def shell_tool(command: str):
+        def run_shell(command: str):
             """run shell command"""
             return ShellTool(*a, **kw).run(command)
 
-        return [shell_tool]
+        return [run_shell]
 
 
 class Python_(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
-        def python_repl_tool(script):
+        def run_python(script):
             """run python"""
             return PythonREPL(*a, **kw).run(script)
 
-        return [python_repl_tool]
+        return [run_python]
 
 
 class Wikipedia(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
-        def wikipedia_tool(query):
+        def search_wikipedia(query):
             """search for wikipedia"""
             return WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper(), *a, **kw).run(query)
 
-        return [wikipedia_tool]
+        return [search_wikipedia]
 
 
 class Serper(Tools):
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
-        def serper_tool(query):
+        def search_serper(query):
             """search for serper"""
             return GoogleSerperAPIWrapper(*a, **kw).run(query)
 
-        return [serper_tool]
+        return [search_serper]
 
 
 @dataclass
@@ -84,11 +84,11 @@ class Tavily(Tools):
 
     def get_tools(self, *a, **kw) -> list[BaseTool]:
         @tool
-        def tavily_tool(query):
+        def search_tavily(query):
             """search for tavily"""
             return TavilySearch(max_results=self.max_results, *a, **kw).run(query)
 
-        return [tavily_tool]
+        return [search_tavily]
 
 
 class Browser(Tools):
