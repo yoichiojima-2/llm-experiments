@@ -1,5 +1,4 @@
 from fastmcp import FastMCP
-
 from llm_experiments import tools as t
 
 
@@ -45,7 +44,6 @@ def main():
     children = [
         dev(),
         research(),
-        # slack()
     ]
     for child in children:
         main.composite(child)
