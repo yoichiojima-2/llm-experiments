@@ -1,4 +1,5 @@
 from fastmcp import FastMCP
+
 from llm_experiments import tools as t
 
 
@@ -27,24 +28,9 @@ def dev():
     return MCPServer(name="dev", tools=[t.Shell(), t.Python_()], tags=["dev"])
 
 
-def research():
-    return MCPServer(
-        name="research",
-        tools=[t.Wikipedia(), t.DuckDuckGo(), t.Tavily(), t.Serper()],
-        tags=["research"],
-    )
-
-
-def slack():
-    return MCPServer(name="slack", tools=[t.Slack()], tags=["slack"])
-
-
 def main():
     main = MCPServer("llm_experiments")
-    children = [
-        dev(),
-        research(),
-    ]
+    children = [dev()]
     for child in children:
         main.composite(child)
     main.run()
